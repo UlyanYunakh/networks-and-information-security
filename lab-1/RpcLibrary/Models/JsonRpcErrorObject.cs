@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace RpcLibrary.Models
 {
-    public class ErrorObject
+    public class JsonRpcErrorObject
     {
         [JsonProperty(Required = Required.Always)]
         public int code { get; set; }
