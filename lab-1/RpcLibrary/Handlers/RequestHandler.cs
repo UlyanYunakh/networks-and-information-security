@@ -2,35 +2,42 @@ using System;
 using System.Reflection;
 using System.Collections.Generic;
 using RpcLibrary.Models;
+using Newtonsoft.Json;
 
 namespace RpcLibrary.Handlers
 {
     internal static class RequestHandler
     {
-        internal static void Handle(string json)
+        internal static string Handle(string json, out bool isNotification)
         {
+            isNotification = false;
+            string responce = JsonConvert.SerializeObject(GetResponce(json, out isNotification));
+            return responce;
+        }
+
+        private static JsonRpcResponce GetResponce(string json, out bool isNotification)
+        {
+            isNotification = false;
+
             if (JsonRpcParser.ValidateJson(json) == false)
             {
-                // error -32700
-                return;
+                return SendError(-32700, "Parse error");
             }
 
             Type paramsType = GetRequestParamsType(json);
             if (paramsType == null)
             {
-                // error -32600
-                return;
+                return SendError(-32600, "Invalid Request");
             }
 
             if (paramsType == typeof(object[]))
             {
-                HandleRequest(json);
+                return HandleRequest(json, out isNotification);
             }
-            else if (paramsType == typeof(Dictionary<string, object>))
+            else
             {
-                HandleNamedRequest(json);
+                return HandleNamedRequest(json, out isNotification);
             }
-
         }
         private static Type GetRequestParamsType(string json)
         {
@@ -49,57 +56,56 @@ namespace RpcLibrary.Handlers
             }
         }
 
-        private static void HandleRequest(string json)
+        private static JsonRpcResponce HandleRequest(string json, out bool isNotification)
         {
+            isNotification = false;
+
             JsonRpcRequest<object[]> request = JsonRpcParser.ParseRequest<object[]>(json);
 
-            MethodInfo method = null;
-
-            if (ValidateMethod(request.method, out method) == false && method == null)
+            if (request.id == null)
             {
-                // error -32601
-                return;
+                isNotification = true;
             }
 
-            object result = ExecuteMethod(method, request.@params);
+            MethodInfo method = ValidateMethod(request.method);
+
+            if (method == null)
+            {
+                return SendError(-32601, "Method not found", request.id);
+            }
+
+            return ExecuteMethod(method, request.@params, request.id);
         }
 
-        private static void HandleNamedRequest(string json)
+        private static JsonRpcResponce HandleNamedRequest(string json, out bool isNotification)
         {
+            isNotification = false;
+
             JsonRpcRequest<Dictionary<string, object>> request = JsonRpcParser.ParseRequest<Dictionary<string, object>>(json);
 
-            MethodInfo method = null;
-
-            if (ValidateMethod(request.method, out method) == false && method == null)
+            if (request.id == null)
             {
-                // error -32601
-                return;
+                isNotification = true;
             }
 
-            object result = ExecuteNamedMethod(method, request.@params);
+            MethodInfo method = ValidateMethod(request.method);
+
+            if (method == null)
+            {
+                return SendError(-32601, "Method not found", request.id);
+            }
+
+            return ExecuteNamedMethod(method, request.@params, request.id);
         }
 
-        private static bool ValidateMethod(string methodName, out MethodInfo method)
-        {
-            try
-            {
-                method = RpcServer.Procedures.GetType().GetMethod(methodName);
-            }
-            catch
-            {
-                method = null;
-                return false;
-            }
+        private static MethodInfo ValidateMethod(string methodName) 
+            => RpcServer.Procedures.GetType().GetMethod(methodName);
 
-            return true;
-        }
-
-        private static object ExecuteNamedMethod(MethodInfo method, Dictionary<string, object> @params)
+        private static JsonRpcResponce ExecuteNamedMethod(MethodInfo method, Dictionary<string, object> @params, int? id)
         {
             if (method.GetParameters().Length != @params.Count)
             {
-                // error -32602
-                return null;
+                return SendError(-32602, "Invalid params", id);
             }
 
             object[] objParams = new object[method.GetParameters().Length];
@@ -119,16 +125,14 @@ namespace RpcLibrary.Handlers
                 }
                 if (i == count)
                 {
-                    // error -32602
-                    return null;
+                    return SendError(-32602, "Invalid params", id);
                 }
             }
 
-            object result = ExecuteMethod(method, objParams);
-            return result;
+            return ExecuteMethod(method, objParams, id);
         }
 
-        private static object ExecuteMethod(MethodInfo method, object[] @params)
+        private static JsonRpcResponce ExecuteMethod(MethodInfo method, object[] @params, int? id)
         {
             object result = null;
 
@@ -138,21 +142,33 @@ namespace RpcLibrary.Handlers
             }
             catch (ArgumentException e)
             {
-                // error -32602
-                return null;
+                return SendError(-32602, "Invalid params", id);
             }
             catch (TargetParameterCountException e)
             {
-                // error -32602
-                return null;
+                return SendError(-32602, "Invalid params", id);
             }
             catch
             {
-                // error -32603
-                return null;
+                return SendError(-32603, "Internal error", id);
             }
 
-            return result;
+            return new JsonRpcResponce()
+            {
+                result = result,
+                id = id
+            };
         }
+
+        private static JsonRpcResponce SendError(int errorCode, string errorMessage, int? id = null) => new JsonRpcResponce()
+        {
+            error = new JsonRpcErrorObject()
+            {
+                code = errorCode,
+                message = errorMessage,
+                date = DateTime.Now
+            },
+            id = id
+        };
     }
 }
