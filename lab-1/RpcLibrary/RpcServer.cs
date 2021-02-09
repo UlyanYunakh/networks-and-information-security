@@ -3,17 +3,16 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading;
 
 namespace RpcLibrary
 {
     public class RpcServer
     {
-        public int RpcPort { get; private set; }
-        public string RpcIPAddress { get; private set; }
+        public int RpcPort { get; set; } = 8006; // port by default
+        public string RpcIPAddress { get; set; } = "127.0.0.2"; // localhost by default
 
-        private IPEndPoint rpcPoint;
         private Socket listenSocket;
+        private int connectionId = 0;
 
         ~RpcServer()
         {
@@ -21,112 +20,120 @@ namespace RpcLibrary
             listenSocket.Close();
         }
 
-        public void CreateDefaultAddress()
-        {
-            RpcIPAddress = "127.0.0.2"; // localhost by default
-            RpcPort = 8006; // port by default
-            rpcPoint = new IPEndPoint(IPAddress.Parse(RpcIPAddress), RpcPort);
-        }
-
-        public void CreateAddress(string address, int port)
-        {
-            IPAddress iPAddress;
-
-            if (IPAddress.TryParse(address, out iPAddress) == false)
-            {
-                iPAddress = IPAddress.Parse("127.0.0.2");
-                RpcIPAddress = "127.0.0.2";
-                // log : Invalid IP Address. Default Address (127.0.0.2) is set.
-            }
-            else
-            {
-                RpcIPAddress = address;
-            }
-
-            try
-            {
-                RpcPort = port;
-                rpcPoint = new IPEndPoint(iPAddress, RpcPort);
-            }
-            catch (ArgumentOutOfRangeException e)
-            {
-                RpcPort = 8006;
-                rpcPoint = new IPEndPoint(iPAddress, RpcPort);
-                // log : Error: Invalid Port. Default Port (8006) is set.
-            }
-        }
-
         public async void ListenAsync()
         {
+            // log : Server start.
+
             listenSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+
+            IPEndPoint rpcPoint = null;
+
+            if (CreateAddress(ref rpcPoint) == false)
+            {
+                // log : Server error: Server cannot be started. Invalid Address.
+                return;
+            }
 
             try
             {
                 listenSocket.Bind(rpcPoint);
                 listenSocket.Listen(10);
-
-                await Task.Run(Listen);
             }
             catch (SocketException e)
             {
-                // log : Error: Socket unavailable.
-                // log : Error: Server cannot be started.
+                // log : Server error: Server cannot be started. Socket unavailable.
+                return;
             }
             catch (Exception e)
             {
-                // log : Error: Server cannot be started.
+                // log : Server error: Server cannot be started.
+                return;
             }
+
+            await Task.Run(() => Listen());
+        }
+
+        private bool CreateAddress(ref IPEndPoint rpcPoint)
+        {
+            IPAddress iPAddress;
+
+            if (IPAddress.TryParse(RpcIPAddress, out iPAddress) == false)
+            {
+                // log : Server error: Server address cannot be created. Invalid IP.
+                return false;
+            }
+
+            try
+            {
+                rpcPoint = new IPEndPoint(iPAddress, RpcPort);
+            }
+            catch (ArgumentOutOfRangeException e)
+            {
+                // log : Server error: Server address cannot be created. Invalid Port.
+                return false;
+            }
+
+            return true;
         }
 
         private void Listen()
         {
+            // log : Server: Server running
+
             while (true)
             {
-                // log : Waiting for Connection
+                // log : Server: Waiting for connection
 
-                Socket handler = listenSocket.Accept();
+                Socket connectedSocket = listenSocket.Accept();
 
-                // log : Connection Accepted
+                // log : Server: Connection accepted
 
-                while (handler.Available == 0) { }
-
-                // log : Receiving Data
-
-                StringBuilder builder = new StringBuilder();
-                int bytes = 0;
-                byte[] data = new byte[handler.Available];
-
-                do
-                {
-                    bytes = handler.Receive(data);
-                    builder.Append(Encoding.Unicode.GetString(data, 0, bytes));
-                }
-                while (handler.Available > 0);
-
-                // log : Data Received
-
-                // parse request
-
-                // execute method
-
-                // parse response
-
-                // log : Sending Responce
-
-                string responce = "Server Responce";
-                data = new byte[responce.Length];
-                data = Encoding.Unicode.GetBytes(responce);
-                handler.Send(data);
-
-                // log : Responce send
-
-                // log : Closing Connection
-
-                handler.Shutdown(SocketShutdown.Both);
-                handler.Close();
-                
-                // log : Connection Close
+                Task.Run(() => ConnectionHandler(connectedSocket, connectionId++));
             }
+        }
+
+        private void ConnectionHandler(Socket connectedSocket, int id)
+        {
+            // log : Server: Connection {id}: Waiting request
+
+            while (connectedSocket.Available == 0) { }
+
+            // log : Server: Connection {id}: Receiving request
+
+            StringBuilder builder = new StringBuilder();
+            int bytes = 0;
+            byte[] data = new byte[connectedSocket.Available];
+
+            do
+            {
+                bytes = connectedSocket.Receive(data, data.Length, 0);
+                builder.Append(Encoding.Unicode.GetString(data, 0, bytes));
+            }
+            while (connectedSocket.Available > 0);
+
+            // log : Server: Connection {id}: Request received
+
+            // parse request
+
+            // execute method
+
+            // parse response
+
+            // log : Server: Connection {id}: Sending responce
+
+            string responce = $"{id} Server Responce";
+            data = new byte[responce.Length];
+            data = Encoding.Unicode.GetBytes(responce);
+            connectedSocket.Send(data);
+
+            // log : Server: Connection {id}: Responce sent
+
+            // log : Server: Connection {id}: Closing connection
+
+            connectedSocket.Shutdown(SocketShutdown.Both);
+            connectedSocket.Close();
+
+            // log : Server: Connection {id}: Connection closed
         }
     }
 }

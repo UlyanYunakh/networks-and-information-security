@@ -22,24 +22,24 @@ namespace RpcLibrary
 
             if (ConnectToServer(sendSocket) == false)
             {
-                // log : Error: No connection with server
+                // log : Client error: No connection with server.
                 return null;
             }
 
-            // log : Successful connection
+            // log : Client: Server connection established
 
-            // log : Sending request
+            // log : Client: Sending request
 
             byte[] data = Encoding.Unicode.GetBytes(jsonRpcRequest);
             sendSocket.Send(data);
 
-            // log : Request send
+            // log : Client: Request sent
 
-            // log : Waiting responce
+            // log : Client: Waiting responce
 
             while (sendSocket.Available == 0) { }
 
-            // log : Responce accepted
+            // log : Client: Responce accepted
 
             StringBuilder builder = new StringBuilder();
             int bytes = 0;
@@ -52,8 +52,12 @@ namespace RpcLibrary
             }
             while (sendSocket.Available > 0);
 
+            // log : Client: Closing connection
+
             sendSocket.Shutdown(SocketShutdown.Both);
             sendSocket.Close();
+
+            // log : Client: Connection closed
 
             return builder.ToString();
         }
@@ -64,9 +68,11 @@ namespace RpcLibrary
 
             if (CreateAddress(ref rpcServerPoint) == false)
             {
-                // log : Error: Cannot connect to server. Invalid Address.
+                // log : Client error: Cannot connect to server. Invalid server address.
                 return false;
             }
+
+            // log : Client: Server address created.
 
             try
             {
@@ -74,15 +80,15 @@ namespace RpcLibrary
             }
             catch (SocketException e)
             {
-                // log : Error: Socket unavailable.
-                // log : Error: Cannot connect to server.
+                // log : Client error: Cannot connect to server. Socket unavailable.
                 return false;
             }
             catch (Exception e)
             {
-                // log : Error: Cannot connect to server.
+                // log : Client error: Cannot connect to server.
                 return false;
             }
+
             return true;
         }
 
@@ -92,7 +98,7 @@ namespace RpcLibrary
 
             if (IPAddress.TryParse(RpcServerIPAddress, out iPAddress) == false)
             {
-                // log : Invalid IP.
+                // log : Error: Server address cannot be created. Invalid IP.
                 return false;
             }
 
@@ -102,7 +108,7 @@ namespace RpcLibrary
             }
             catch (ArgumentOutOfRangeException e)
             {
-                // log : Error: Invalid Port.
+                // log : Error: Server address cannot be created. Invalid Port.
                 return false;
             }
 
