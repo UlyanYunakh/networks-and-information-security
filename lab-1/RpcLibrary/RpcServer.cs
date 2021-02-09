@@ -3,6 +3,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net;
 using System.Net.Sockets;
+using RpcLibrary.Handlers;
 
 namespace RpcLibrary
 {
@@ -10,6 +11,8 @@ namespace RpcLibrary
     {
         public int RpcPort { get; set; } = 8006; // port by default
         public string RpcIPAddress { get; set; } = "127.0.0.2"; // localhost by default
+
+        public static object Procedures { get; set; } = null;
 
         private Socket listenSocket;
         private int connectionId = 0;
@@ -23,6 +26,12 @@ namespace RpcLibrary
         public async void ListenAsync()
         {
             // log : Server start.
+
+            if (Procedures == null)
+            {
+                // log : Server error: Server cannot be started. Procedures not set.
+                return;
+            }
 
             listenSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
@@ -113,20 +122,30 @@ namespace RpcLibrary
 
             // log : Server: Connection {id}: Request received
 
-            // parse request
+            bool isNotification = false;
+            string responce = RequestHandler.Handle(builder.ToString(), out isNotification);
 
-            // execute method
 
-            // parse response
+            if (!isNotification)
+            {
+                // log : Server: Connection {id}: Sending responce
 
-            // log : Server: Connection {id}: Sending responce
+                data = new byte[responce.Length];
+                data = Encoding.Unicode.GetBytes(responce);
+                connectedSocket.Send(data);
 
-            string responce = $"{id} Server Responce";
-            data = new byte[responce.Length];
-            data = Encoding.Unicode.GetBytes(responce);
-            connectedSocket.Send(data);
+                // log : Server: Connection {id}: Responce sent
+            }
+            else
+            {
+                responce = " ";
 
-            // log : Server: Connection {id}: Responce sent
+                data = new byte[responce.Length];
+                data = Encoding.Unicode.GetBytes(responce);
+                connectedSocket.Send(data);
+
+                // log : Notification accepted
+            }
 
             // log : Server: Connection {id}: Closing connection
 
