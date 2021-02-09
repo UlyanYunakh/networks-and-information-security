@@ -123,7 +123,7 @@ namespace RpcLibrary
             }
             while (connectedSocket.Available > 0);
 
-            LogNotify?.Invoke($"Server: Connection {id}: Request received.");
+            LogNotify?.Invoke($"Server: Connection {id}: Request received: {builder.ToString()}");
 
             bool isNotification = false;
             string responce = RequestHandler.Handle(builder.ToString(), out isNotification);
@@ -137,7 +137,7 @@ namespace RpcLibrary
                 data = Encoding.Unicode.GetBytes(responce);
                 connectedSocket.Send(data);
 
-                LogNotify?.Invoke($"Server: Connection {id}: Responce sent.");
+                LogNotify?.Invoke($"Server: Connection {id}: Responce sent: {responce}");
             }
             else
             {
