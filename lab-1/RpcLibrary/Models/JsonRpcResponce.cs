@@ -13,7 +13,7 @@ namespace RpcLibrary.Models
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public JsonRpcErrorObject error { get; set; }
 
-        [JsonProperty(Required = Required.Always)]
-        public int id { get; set; }
+        [JsonProperty(NullValueHandling = NullValueHandling.Include)]
+        public int? id { get; set; }
     }
 }
