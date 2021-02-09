@@ -11,35 +11,38 @@ namespace RpcLibrary
         public int RpcServerPort { get; set; } = 8006; // server's port by default
         public string RpcServerIPAddress { get; set; } = "127.0.0.2"; // server's localhost by default
 
+        public delegate void Log(string message);
+        public event Log LogNotify;
+
+        private int connectionId = 0;
+
         public async Task<string> SendRequestAsync(string jsonRpcRequest)
         {
-            return await Task.Run(() => SendRequest(jsonRpcRequest));
+            connectionId++;
+            return await Task.Run(() => SendRequest(jsonRpcRequest, connectionId));
         }
 
-        private string SendRequest(string jsonRpcRequest)
+        private string SendRequest(string jsonRpcRequest, int id)
         {
+            LogNotify?.Invoke($"Client: Connection {id}: Start connection.");
+
             Socket sendSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
-            if (ConnectToServer(sendSocket) == false)
+            if (ConnectToServer(sendSocket, id) == false)
             {
-                // log : Client error: No connection with server.
+                LogNotify?.Invoke($"Client error: Connection {id}: No connection  with server.");
                 return null;
             }
 
-            // log : Client: Server connection established
-
-            // log : Client: Sending request
+            LogNotify?.Invoke($"Client: Connection {id}: Server connection established.\nClient: Connection {id}: Sending request: {jsonRpcRequest}");
 
             byte[] data = Encoding.Unicode.GetBytes(jsonRpcRequest);
             sendSocket.Send(data);
 
-            // log : Client: Request sent
-
-            // log : Client: Waiting responce
+            LogNotify?.Invoke($"Client: Connection {id}: Request sent.\nClient: Connection {id}: Waiting responce.");
 
             while (sendSocket.Available == 0) { }
 
-            // log : Client: Responce accepted
 
             StringBuilder builder = new StringBuilder();
             int bytes = 0;
@@ -52,53 +55,53 @@ namespace RpcLibrary
             }
             while (sendSocket.Available > 0);
 
-            // log : Client: Closing connection
+            LogNotify?.Invoke($"Client: Connection {id}: Responce accepted: {builder.ToString()}\nClient: Connection {id}: Closing connection.");
 
             sendSocket.Shutdown(SocketShutdown.Both);
             sendSocket.Close();
 
-            // log : Client: Connection closed
+            LogNotify?.Invoke($"Client: Connection {id}: Connection  closed.");
 
             return builder.ToString();
         }
 
-        private bool ConnectToServer(Socket sendSocket)
+        private bool ConnectToServer(Socket sendSocket, int id)
         {
             IPEndPoint rpcServerPoint = null;
 
-            if (CreateAddress(ref rpcServerPoint) == false)
+            if (CreateAddress(ref rpcServerPoint, id) == false)
             {
-                // log : Client error: Cannot connect to server. Invalid server address.
+                LogNotify?.Invoke($"Client error: Connection {id}: Cannot connect to server. Invalid server address.");
                 return false;
             }
 
-            // log : Client: Server address created.
+            LogNotify?.Invoke($"Client: Connection {id}: Server address created.");
 
             try
             {
                 sendSocket.Connect(rpcServerPoint);
             }
-            catch (SocketException e)
+            catch (SocketException)
             {
-                // log : Client error: Cannot connect to server. Socket unavailable.
+                LogNotify?.Invoke($"Client error: Connection {id}: Cannot connect to server. Socket unavailable.");
                 return false;
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                // log : Client error: Cannot connect to server.
+                LogNotify?.Invoke($"Client error: Connection {id}: Cannot connect to server.");
                 return false;
             }
 
             return true;
         }
 
-        private bool CreateAddress(ref IPEndPoint rpcServerPoint)
+        private bool CreateAddress(ref IPEndPoint rpcServerPoint, int id)
         {
             IPAddress iPAddress;
 
             if (IPAddress.TryParse(RpcServerIPAddress, out iPAddress) == false)
             {
-                // log : Error: Server address cannot be created. Invalid IP.
+                LogNotify?.Invoke($"Client error: Connection {id}: Server address cannot be created. Invalid IP.");
                 return false;
             }
 
@@ -106,9 +109,9 @@ namespace RpcLibrary
             {
                 rpcServerPoint = new IPEndPoint(iPAddress, RpcServerPort);
             }
-            catch (ArgumentOutOfRangeException e)
+            catch (ArgumentOutOfRangeException)
             {
-                // log : Error: Server address cannot be created. Invalid Port.
+                LogNotify?.Invoke($"Client error: Connection {id}: Server address cannot be created. Invalid Port.");
                 return false;
             }
 

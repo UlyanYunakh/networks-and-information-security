@@ -14,6 +14,9 @@ namespace RpcLibrary
 
         public static object Procedures { get; set; } = null;
 
+        public delegate void Log(string message);
+        public event Log LogNotify;
+
         private Socket listenSocket;
         private int connectionId = 0;
 
@@ -25,11 +28,11 @@ namespace RpcLibrary
 
         public async void ListenAsync()
         {
-            // log : Server start.
+            LogNotify?.Invoke($"Server: Start.");
 
             if (Procedures == null)
             {
-                // log : Server error: Server cannot be started. Procedures not set.
+                LogNotify?.Invoke($"Server error: Server cannot be started. Procedures not set.");
                 return;
             }
 
@@ -39,7 +42,7 @@ namespace RpcLibrary
 
             if (CreateAddress(ref rpcPoint) == false)
             {
-                // log : Server error: Server cannot be started. Invalid Address.
+                LogNotify?.Invoke($"Server error: Server cannot be started. Invalid Address.");
                 return;
             }
 
@@ -48,14 +51,14 @@ namespace RpcLibrary
                 listenSocket.Bind(rpcPoint);
                 listenSocket.Listen(10);
             }
-            catch (SocketException e)
+            catch (SocketException)
             {
-                // log : Server error: Server cannot be started. Socket unavailable.
+                LogNotify?.Invoke($"Server error: Server cannot be started. Socket unavailable.");
                 return;
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                // log : Server error: Server cannot be started.
+                LogNotify?.Invoke($"Server error: Server cannot be started.");
                 return;
             }
 
@@ -68,7 +71,7 @@ namespace RpcLibrary
 
             if (IPAddress.TryParse(RpcIPAddress, out iPAddress) == false)
             {
-                // log : Server error: Server address cannot be created. Invalid IP.
+                LogNotify?.Invoke($"Server error: Server address cannot be created. Invalid IP.");
                 return false;
             }
 
@@ -76,9 +79,9 @@ namespace RpcLibrary
             {
                 rpcPoint = new IPEndPoint(iPAddress, RpcPort);
             }
-            catch (ArgumentOutOfRangeException e)
+            catch (ArgumentOutOfRangeException)
             {
-                // log : Server error: Server address cannot be created. Invalid Port.
+                LogNotify?.Invoke($"Server error: Server address cannot be created. Invalid Port.");
                 return false;
             }
 
@@ -87,15 +90,15 @@ namespace RpcLibrary
 
         private void Listen()
         {
-            // log : Server: Server running
+            LogNotify?.Invoke($"Server: Server running.");
 
             while (true)
             {
-                // log : Server: Waiting for connection
+                LogNotify?.Invoke($"Server: Waiting for connection.");
 
                 Socket connectedSocket = listenSocket.Accept();
 
-                // log : Server: Connection accepted
+                LogNotify?.Invoke($"Server: Connection accepted.");
 
                 Task.Run(() => ConnectionHandler(connectedSocket, connectionId++));
             }
@@ -103,11 +106,11 @@ namespace RpcLibrary
 
         private void ConnectionHandler(Socket connectedSocket, int id)
         {
-            // log : Server: Connection {id}: Waiting request
+            LogNotify?.Invoke($"Server: Connection {id}: Waiting request.");
 
             while (connectedSocket.Available == 0) { }
 
-            // log : Server: Connection {id}: Receiving request
+            LogNotify?.Invoke($"Server: Connection {id}: Receiving request.");
 
             StringBuilder builder = new StringBuilder();
             int bytes = 0;
@@ -120,7 +123,7 @@ namespace RpcLibrary
             }
             while (connectedSocket.Available > 0);
 
-            // log : Server: Connection {id}: Request received
+            LogNotify?.Invoke($"Server: Connection {id}: Request received.");
 
             bool isNotification = false;
             string responce = RequestHandler.Handle(builder.ToString(), out isNotification);
@@ -128,13 +131,13 @@ namespace RpcLibrary
 
             if (!isNotification)
             {
-                // log : Server: Connection {id}: Sending responce
+                LogNotify?.Invoke($"Server: Connection {id}: Sending responce.");
 
                 data = new byte[responce.Length];
                 data = Encoding.Unicode.GetBytes(responce);
                 connectedSocket.Send(data);
 
-                // log : Server: Connection {id}: Responce sent
+                LogNotify?.Invoke($"Server: Connection {id}: Responce sent.");
             }
             else
             {
@@ -144,15 +147,15 @@ namespace RpcLibrary
                 data = Encoding.Unicode.GetBytes(responce);
                 connectedSocket.Send(data);
 
-                // log : Notification accepted
+                LogNotify?.Invoke($"Server: Notification accepted.");
             }
 
-            // log : Server: Connection {id}: Closing connection
+            LogNotify?.Invoke($"Server: Connection {id}: Closing connection.");
 
             connectedSocket.Shutdown(SocketShutdown.Both);
             connectedSocket.Close();
 
-            // log : Server: Connection {id}: Connection closed
+            LogNotify?.Invoke($"Client: Server: Connection {id}: Connection closed.");
         }
     }
 }

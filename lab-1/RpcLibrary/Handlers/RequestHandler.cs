@@ -140,11 +140,11 @@ namespace RpcLibrary.Handlers
             {
                 result = method.Invoke(RpcServer.Procedures, @params);
             }
-            catch (ArgumentException e)
+            catch (ArgumentException)
             {
                 return SendError(-32602, "Invalid params", id);
             }
-            catch (TargetParameterCountException e)
+            catch (TargetParameterCountException)
             {
                 return SendError(-32602, "Invalid params", id);
             }
