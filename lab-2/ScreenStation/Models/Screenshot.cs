@@ -6,13 +6,14 @@ namespace ScreenStation.Models
     {
         [Key]
         public int Id { get; set; }
-        
+
         [MaxLength(200)]
         public string Description { get; set; }
 
         [Required]
         public byte[] Image { get; set; }
 
+        public int? GameId { get; set; }
         public Game Game { get; set; }
     }
 }

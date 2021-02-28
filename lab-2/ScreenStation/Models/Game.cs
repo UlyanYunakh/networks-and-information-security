@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace ScreenStation.Models
@@ -11,8 +10,10 @@ namespace ScreenStation.Models
         [Required]
         public string Name { get; set; }
 
-        public List<Developer> Developers { get; set; }
+        public int? DeveloperId { get; set; }
+        public Developer Developer { get; set; }
 
-        public List<Platform> Platforms { get; set; }
+        public int? PlatformId { get; set; }
+        public Platform Platform { get; set; }
     }
 }
