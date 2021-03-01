@@ -9,7 +9,8 @@
 <form asp-action="MainSave">
 
     <div class="form-floating my-2">
-        <textarea type="text" class="form-control btn-dark bg-white text-dark" id="text" placeholder="Name" asp-for="Text"></textarea>
+        <textarea type="text" class="form-control btn-dark bg-white text-dark" id="text" placeholder="Name"
+            asp-for="Text" style="height: 150px;resize: none" maxlength="280" required></textarea>
         <label for="text" asp-for="Text">Пост</label>
     </div>
 

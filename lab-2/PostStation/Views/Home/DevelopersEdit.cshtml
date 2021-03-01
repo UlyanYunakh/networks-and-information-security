@@ -1,7 +1,7 @@
 @model Developer
 @inject StationContext db
 @{
-    ViewBag.Title = "Редактировать разработчика";
+    ViewBag.Title = "Изменить разработчика";
 }
 
 @await Html.PartialAsync("_Navbar", Navbar.Current.Developers)
@@ -9,7 +9,7 @@
 <form asp-action="DevelopersSave" asp-route-id="@Model.Id">
 
     <div class="form-floating my-2">
-        <input type="text" class="form-control" id="name" placeholder="Name" asp-for="Name">
+        <input type="text" class="form-control" id="name" placeholder="Name" asp-for="Name" required>
         <label for="name" asp-for="Name">Название</label>
     </div>
 
