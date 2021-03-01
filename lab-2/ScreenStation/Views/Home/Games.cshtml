@@ -1,4 +1,34 @@
+@inject StationContext db
 @{
     ViewBag.Title = "Игры";
 }
+
 @await Html.PartialAsync("_Navbar", Navbar.Current.Games)
+
+<a class="btn btn-outline-success" asp-action="GamesAdd">Добавить</a>
+
+<div class="d-flex flex-wrap">
+    @foreach (Game game in db.Games.Include(g => g.Developer).Include(g => g.Platform))
+    {
+        <div class="p-2 m-2 bg-success text-white rounded d-flex align-items-center">
+            <p class="m-0">@game.Name
+                @if (game.Developer != null)
+                {
+                    @:| @game.Developer.Name
+
+                }
+                @if (game.Platform != null)
+                {
+                    @:| @game.Platform.Name
+
+                }
+            </p>
+            <a class="btn p-1" asp-action="GamesEdit" asp-route-id="@game.Id">
+                <i class="bi-pencil text-white"></i>
+            </a>
+            <a class="btn p-1" asp-action="GamesDelete" asp-route-id="@game.Id">
+                <i class="bi-x text-white"></i>
+            </a>
+        </div>
+    }
+</div>

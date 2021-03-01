@@ -1,0 +1,42 @@
+@model Game
+@inject StationContext db
+@{
+    ViewBag.Title = "Добавить игру";
+}
+
+@await Html.PartialAsync("_Navbar", Navbar.Current.Games)
+
+<form asp-action="GamesSave">
+
+    <div class="form-floating my-2">
+        <input type="text" class="form-control btn-success bg-white text-dark" id="name" placeholder="Name" asp-for="Name">
+        <label for="name" asp-for="Name">Название</label>
+    </div>
+
+    <div class="form-floating mb-2">
+        <select class="form-select btn-success bg-white text-dark" id="developer" aria-label="select" asp-for="DeveloperId">
+            <option>None</option>
+            @foreach (Developer developer in db.Developers)
+            {
+                <option value="@developer.Id">@developer.Name</option>
+            }
+        </select>
+        <label for="developer" asp-for="DeveloperId">Разработчик</label>
+    </div>
+
+    <div class="form-floating mb-2">
+        <select class="form-select btn-success bg-white text-dark" id="platform" aria-label="select" asp-for="PlatformId">
+            <option>None</option>
+            @foreach (Platform platform in db.Platforms)
+            {
+                <option value="@platform.Id">@platform.Name</option>
+            }
+        </select>
+        <label for="platform" asp-for="PlatformId">Платформа</label>
+    </div>
+
+    <div class="form-group d-grid gap-2">
+        <button type="submit" class="btn btn-success" type="button">Добавить</button>
+    </div>
+
+</form>

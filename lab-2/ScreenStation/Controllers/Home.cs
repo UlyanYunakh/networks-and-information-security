@@ -20,11 +20,62 @@ namespace ScreenStation.Controllers
         {
             return View();
         }
+        [HttpGet]
+        public IActionResult MainAdd()
+        {
+            return View();
+        }
 
         [HttpGet]
         public IActionResult Games()
         {
             return View();
+        }
+        [HttpGet]
+        public IActionResult GamesAdd()
+        {
+            return View();
+        }
+        [HttpPost]
+        public async Task<IActionResult> GamesSave(Game game)
+        {
+            db.Games.Update(game);
+            await db.SaveChangesAsync();
+            return RedirectToAction("Games");
+        }
+        [HttpGet]
+        public async Task<IActionResult> GamesEdit(int? id)
+        {
+            if (id != null)
+            {
+                Game game = await db.Games.FirstOrDefaultAsync(g => g.Id == id);
+                if (game != null)
+                {
+                    return View(game);
+                }
+            }
+            return NotFound();
+        }
+        [HttpGet]
+        public async Task<IActionResult> GamesDelete(int? id)
+        {
+            if (id != null)
+            {
+                Game game = await db.Games.FirstOrDefaultAsync(g => g.Id == id);
+                if (game != null)
+                {
+                    var posts = db.Posts.Where(p => p.GameId == game.Id);
+                    foreach(Screenshot screenshot in posts)
+                    {
+                        screenshot.GameId = null;
+                    }
+
+                    db.Remove(game);
+                    await db.SaveChangesAsync();
+                    return RedirectToAction("Games");
+                }
+            }
+            return NotFound();
         }
 
         [HttpGet]
