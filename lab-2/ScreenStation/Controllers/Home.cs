@@ -65,6 +65,12 @@ namespace ScreenStation.Controllers
                 Developer developer = await db.Developers.FirstOrDefaultAsync(d => d.Id == id);
                 if (developer != null)
                 {
+                    var games = db.Games.Where(g => g.DeveloperId == developer.Id);
+                    foreach (Game game in games)
+                    {
+                        game.DeveloperId = null;
+                    }
+
                     db.Remove(developer);
                     await db.SaveChangesAsync();
                     return RedirectToAction("Developers");
@@ -77,6 +83,52 @@ namespace ScreenStation.Controllers
         public IActionResult Platforms()
         {
             return View();
+        }
+        [HttpGet]
+        public IActionResult PlatformsAdd()
+        {
+            return View();
+        }
+        [HttpPost]
+        public async Task<IActionResult> PlatformsSave(Platform platform)
+        {
+            db.Platforms.Update(platform);
+            await db.SaveChangesAsync();
+            return RedirectToAction("Platforms");
+        }
+        [HttpGet]
+        public async Task<IActionResult> PlatformsEdit(int? id)
+        {
+            if (id != null)
+            {
+                Platform platform = await db.Platforms.FirstOrDefaultAsync(p => p.Id == id);
+                if (platform != null)
+                {
+                    return View(platform);
+                }
+            }
+            return NotFound();
+        }
+        [HttpGet]
+        public async Task<IActionResult> PlatformsDelete(int? id)
+        {
+            if (id != null)
+            {
+                Platform platform = await db.Platforms.FirstOrDefaultAsync(p => p.Id == id);
+                if (platform != null)
+                {
+                    var games = db.Games.Where(g => g.PlatformId == platform.Id);
+                    foreach (Game game in games)
+                    {
+                        game.PlatformId = null;
+                    }
+
+                    db.Remove(platform);
+                    await db.SaveChangesAsync();
+                    return RedirectToAction("Platforms");
+                }
+            }
+            return NotFound();
         }
 
         [HttpGet]
@@ -118,7 +170,7 @@ namespace ScreenStation.Controllers
                 if (country != null)
                 {
                     var devs = db.Developers.Where(d => d.CountryId == country.Id);
-                    foreach(Developer dev in devs)
+                    foreach (Developer dev in devs)
                     {
                         dev.CountryId = null;
                     }
