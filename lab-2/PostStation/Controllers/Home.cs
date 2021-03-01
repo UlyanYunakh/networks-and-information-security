@@ -25,6 +25,41 @@ namespace PostStation.Controllers
         {
             return View();
         }
+        [HttpPost]
+        public async Task<IActionResult> MainSave(Post post)
+        {
+            db.Posts.Update(post);
+            await db.SaveChangesAsync();
+            return RedirectToAction("Main");
+        }
+        [HttpGet]
+        public async Task<IActionResult> MainEdit(int? id)
+        {
+            if (id != null)
+            {
+                Post post = await db.Posts.FirstOrDefaultAsync(p => p.Id == id);
+                if (post != null)
+                {
+                    return View(post);
+                }
+            }
+            return NotFound();
+        }
+        [HttpGet]
+        public async Task<IActionResult> MainDelete(int? id)
+        {
+            if (id != null)
+            {
+                Post post = await db.Posts.FirstOrDefaultAsync(p => p.Id == id);
+                if (post != null)
+                {
+                    db.Remove(post);
+                    await db.SaveChangesAsync();
+                    return RedirectToAction("Main");
+                }
+            }
+            return NotFound();
+        }
 
         [HttpGet]
         public IActionResult Games()

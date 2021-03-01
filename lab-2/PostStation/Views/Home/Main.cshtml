@@ -1,6 +1,12 @@
 @inject StationContext db
 @{
     ViewBag.Title = "Главная";
+    var posts = db.Posts
+            .Include(p => p.Game)
+            .ThenInclude(g => g.Platform)
+            .Include(p => p.Game)
+            .ThenInclude(g => g.Developer)
+            .ThenInclude(d => d.Country);
 }
 
 @await Html.PartialAsync("_Navbar", Navbar.Current.Main)
@@ -8,10 +14,49 @@
 <a class="btn btn-outline-dark" asp-action="MainAdd">Добавить</a>
 
 <div class="d-flex flex-column">
-    @foreach (Post post in db.Posts.Include(s => s.Game))
+    @foreach (Post post in posts)
     {
-        <div>
-            
+        <div class="py-1 px-3 my-3 bg-white rounded border border-secondary">
+            <div class="d-flex justify-content-end">
+                <a class="btn p-1" asp-action="MainEdit" asp-route-id="@post.Id">
+                    <i class="bi-pencil"></i>
+                </a>
+                <a class="btn p-1" asp-action="MainDelete" asp-route-id="@post.Id">
+                    <i class="bi-x"></i>
+                </a>
+            </div>
+            @if (post.Game != null)
+            {
+                <h4>
+                    <i class="bi-tv"></i>
+                    @post.Game.Name
+                </h4>
+                <h5>
+                    @if(post.Game.Developer != null)
+                    {
+                        <div>
+                            <i class="bi-people"></i>
+                            @post.Game.Developer.Name
+                        </div>
+
+                        @if(post.Game.Developer.Country != null)
+                        {
+                            <div>
+                                <i class="bi-geo-alt"></i>
+                                @post.Game.Developer.Country.Name
+                            </div>
+                        }
+                    }
+                    @if(post.Game.Platform != null)
+                    {
+                        <div>
+                            <i class="bi-controller"></i>
+                            @post.Game.Platform.Name
+                        </div>
+                    }
+                </h5>
+            }
+            <p>@post.Text</p>
         </div>
     }
 </div>
