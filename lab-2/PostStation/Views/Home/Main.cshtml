@@ -1,0 +1,17 @@
+@inject StationContext db
+@{
+    ViewBag.Title = "Главная";
+}
+
+@await Html.PartialAsync("_Navbar", Navbar.Current.Main)
+
+<a class="btn btn-outline-dark" asp-action="MainAdd">Добавить</a>
+
+<div class="d-flex flex-column">
+    @foreach (Post post in db.Posts.Include(s => s.Game))
+    {
+        <div>
+            
+        </div>
+    }
+</div>

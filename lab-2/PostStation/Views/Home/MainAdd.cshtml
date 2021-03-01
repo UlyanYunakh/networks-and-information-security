@@ -1,0 +1,11 @@
+@model Post
+@inject StationContext db
+@{
+    ViewBag.Title="Добавить пост";
+}
+
+@await Html.PartialAsync("_Navbar", Navbar.Current.Main)
+
+<form asp-action="MainSave">
+    
+</form>

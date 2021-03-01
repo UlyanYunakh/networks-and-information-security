@@ -1,11 +1,11 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using ScreenStation.Models;
+using PostStation.Models;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 
-namespace ScreenStation.Controllers
+namespace PostStation.Controllers
 {
     public class Home : Controller
     {
@@ -65,7 +65,7 @@ namespace ScreenStation.Controllers
                 if (game != null)
                 {
                     var posts = db.Posts.Where(p => p.GameId == game.Id);
-                    foreach(Screenshot screenshot in posts)
+                    foreach(Post screenshot in posts)
                     {
                         screenshot.GameId = null;
                     }

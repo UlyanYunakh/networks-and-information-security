@@ -1,17 +1,15 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace ScreenStation.Models
+namespace PostStation.Models
 {
-    public class Screenshot
+    public class Post
     {
         [Key]
         public int Id { get; set; }
 
-        [MaxLength(200)]
-        public string Description { get; set; }
-
+        [MaxLength(280)]
         [Required]
-        public byte[] Image { get; set; }
+        public string Text { get; set; }
 
         public int? GameId { get; set; }
         public Game Game { get; set; }

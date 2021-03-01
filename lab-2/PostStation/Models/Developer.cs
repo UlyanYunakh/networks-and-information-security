@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace ScreenStation.Models
+namespace PostStation.Models
 {
     public class Developer
     {

@@ -9,9 +9,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using ScreenStation.Models;
+using PostStation.Models;
 
-namespace ScreenStation
+namespace PostStation
 {
     public class Startup
     {
