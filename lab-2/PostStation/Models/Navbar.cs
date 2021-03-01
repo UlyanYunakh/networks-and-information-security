@@ -21,6 +21,14 @@ namespace PostStation.Models
             "Platforms",
             "Countries"
         };
+        public static List<string> Icons { get; } = new List<string>()
+        {
+            "bi-text-paragraph",
+            "bi-tv",
+            "bi-people",
+            "bi-controller",
+            "bi-geo-alt"
+        };
         public enum Current
         {
             Main,
