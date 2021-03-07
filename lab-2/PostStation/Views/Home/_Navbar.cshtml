@@ -1,0 +1,20 @@
+@model Navbar.Current
+@{
+    string style = "nav-link text-dark";
+    string styleActive = "nav-link active bg-dark";
+    int active = (int)Model;
+}
+<ul class="nav nav-pills nav-justified my-2">
+    @for (int i = 0; i < Navbar.Count; i++)
+    {
+        string styleCurrent = style;
+        if (active == i)
+        {
+            styleCurrent = styleActive;
+        }
+        <li class="nav-item">
+            <i class="@Navbar.Icons[i]"></i>
+            <a class="@styleCurrent" asp-action="@Navbar.Actions[i]">@Navbar.Items[i]</a>
+        </li>
+    }
+</ul>
