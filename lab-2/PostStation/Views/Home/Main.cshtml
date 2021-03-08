@@ -1,12 +1,5 @@
-@inject StationContext db
 @{
     ViewBag.Title = "Главная";
-    var posts = db.Posts
-            .Include(p => p.Game)
-            .ThenInclude(g => g.Platform)
-            .Include(p => p.Game)
-            .ThenInclude(g => g.Developer)
-            .ThenInclude(d => d.Country);
 }
 
 @await Html.PartialAsync("_Navbar", Navbar.Current.Main)
@@ -14,7 +7,7 @@
 <a class="btn btn-outline-dark" asp-action="MainAdd">Добавить</a>
 
 <div class="d-flex flex-column">
-    @foreach (Post post in posts)
+    @foreach (Post post in ViewBag.Posts)
     {
         <div class="py-1 px-3 my-3 bg-white rounded border border-secondary">
             <div class="d-flex justify-content-end">

@@ -1,12 +1,11 @@
 @model Post
-@inject StationContext db
 @{
     ViewBag.Title = "Добавить пост";
 }
 
 @await Html.PartialAsync("_Navbar", Navbar.Current.Main)
 
-<form asp-action="MainSave">
+<form asp-action="MainAdd">
 
     <div class="form-floating my-2">
         <textarea type="text" class="form-control btn-dark bg-white text-dark" id="text" placeholder="Name"
@@ -17,7 +16,7 @@
     <div class="form-floating mb-2">
         <select class="form-select btn-dark bg-white text-dark" id="country" aria-label="select" asp-for="GameId">
             <option>None</option>
-            @foreach (Game game in db.Games)
+            @foreach (Game game in ViewBag.Games)
             {
                 <option value="@game.Id">@game.Name</option>
             }

@@ -4,62 +4,174 @@ using Microsoft.AspNetCore.Mvc;
 using PostStation.Models;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using Newtonsoft.Json;
+using System.Collections.Generic;
+using System.Text;
 
 namespace PostStation.Controllers
 {
     public class Home : Controller
     {
         private StationContext db;
-        public Home(StationContext context)
+        private IHttpClientFactory _clientFactory;
+        public Home(StationContext context, IHttpClientFactory clientFactory)
         {
             db = context;
+            _clientFactory = clientFactory;
+        }
+
+        // *** "Main" actions section ***
+
+        [HttpGet]
+        public async Task<IActionResult> Main()
+        {
+            try
+            {
+                var client = _clientFactory.CreateClient("poststation");
+                var responce = await client.GetAsync("api/posts");
+                responce.EnsureSuccessStatusCode();
+
+                ViewBag.Posts = JsonConvert
+                    .DeserializeObject<List<Post>>(
+                        responce.Content.ReadAsStringAsync().Result
+                    );
+
+                return View();
+            }
+            catch
+            {
+                return NoContent();
+            }
         }
 
         [HttpGet]
-        public IActionResult Main()
+        public async Task<IActionResult> MainAdd()
         {
-            return View();
+            try
+            {
+                var client = _clientFactory.CreateClient("poststation");
+                var responce = await client.GetAsync("api/games");
+                responce.EnsureSuccessStatusCode();
+
+                ViewBag.Games = JsonConvert
+                    .DeserializeObject<List<Game>>(
+                        responce.Content.ReadAsStringAsync().Result
+                    );
+
+                return View();
+            }
+            catch
+            {
+                return NoContent();
+            }
         }
-        [HttpGet]
-        public IActionResult MainAdd()
-        {
-            return View();
-        }
+
         [HttpPost]
-        public async Task<IActionResult> MainSave(Post post)
+        public async Task<IActionResult> MainAdd(Post post)
         {
-            db.Posts.Update(post);
-            await db.SaveChangesAsync();
-            return RedirectToAction("Main");
+            try
+            {
+                var postJson = new StringContent(
+                    JsonConvert.SerializeObject(post),
+                    Encoding.UTF8,
+                    "application/json"
+                );
+
+                var client = _clientFactory.CreateClient("poststation");
+                var responce = await client.PostAsync("/api/posts", postJson);
+                responce.EnsureSuccessStatusCode();
+
+                return RedirectToAction("Main");
+            }
+            catch
+            {
+                return NoContent();
+            }
         }
+
         [HttpGet]
         public async Task<IActionResult> MainEdit(int? id)
         {
-            if (id != null)
+            try
             {
-                Post post = await db.Posts.FirstOrDefaultAsync(p => p.Id == id);
-                if (post != null)
+                if (id == null)
                 {
-                    return View(post);
+                    return NoContent();
                 }
+
+                var client = _clientFactory.CreateClient("poststation");
+                var responce = await client.GetAsync($"api/posts/{id}");
+                responce.EnsureSuccessStatusCode();
+
+                var post = JsonConvert
+                    .DeserializeObject<Post>(
+                        responce.Content.ReadAsStringAsync().Result
+                    );
+
+                responce = await client.GetAsync("api/games");
+                responce.EnsureSuccessStatusCode();
+
+                ViewBag.Games = JsonConvert
+                    .DeserializeObject<List<Game>>(
+                        responce.Content.ReadAsStringAsync().Result
+                    );
+
+                return View(post);
             }
-            return NotFound();
+            catch
+            {
+                return NoContent();
+            }
         }
+
+        [HttpPost]
+        public async Task<IActionResult> MainEdit(Post post)
+        {
+            try
+            {
+                var postJson = new StringContent(
+                    JsonConvert.SerializeObject(post),
+                    Encoding.UTF8,
+                    "application/json"
+                );
+
+                var client = _clientFactory.CreateClient("poststation");
+                var responce = await client.PutAsync("/api/posts", postJson);
+                responce.EnsureSuccessStatusCode();
+
+                return RedirectToAction("Main");
+            }
+            catch
+            {
+                return NoContent();
+            }
+        }
+
         [HttpGet]
         public async Task<IActionResult> MainDelete(int? id)
         {
-            if (id != null)
+            try
             {
-                Post post = await db.Posts.FirstOrDefaultAsync(p => p.Id == id);
-                if (post != null)
+                if (id == null)
                 {
-                    db.Remove(post);
-                    await db.SaveChangesAsync();
-                    return RedirectToAction("Main");
+                    return NoContent();
                 }
+
+                var client = _clientFactory.CreateClient("poststation");
+                var responce = await client.DeleteAsync($"api/posts/{id}");
+                responce.EnsureSuccessStatusCode();
+
+                return RedirectToAction("Main");
             }
-            return NotFound();
+            catch
+            {
+                return NoContent();
+            }
         }
+
+        // *** "Games" actions section ***
 
         [HttpGet]
         public IActionResult Games()
@@ -100,7 +212,7 @@ namespace PostStation.Controllers
                 if (game != null)
                 {
                     var posts = db.Posts.Where(p => p.GameId == game.Id);
-                    foreach(Post screenshot in posts)
+                    foreach (Post screenshot in posts)
                     {
                         screenshot.GameId = null;
                     }

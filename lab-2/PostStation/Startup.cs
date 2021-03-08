@@ -29,6 +29,11 @@ namespace PostStation
                 options.UseNpgsql(sqlConnectionString);
             });
 
+            services.AddHttpClient("poststation", c =>
+            {
+                c.BaseAddress = new Uri("http://localhost:5002");
+            });
+
             services.AddControllersWithViews();
         }
 
