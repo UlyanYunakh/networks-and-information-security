@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace PostStation.Models
+namespace PostStationModels
 {
     public class Platform
     {

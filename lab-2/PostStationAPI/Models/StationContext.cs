@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using PostStationModels;
 
 namespace PostStationAPI.Models
 {

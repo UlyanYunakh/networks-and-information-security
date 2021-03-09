@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace PostStationAPI.Models
+namespace PostStationModels
 {
     public class Country
     {

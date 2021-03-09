@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace PostStation.Models
+namespace PostStation.Utilities
 {
     public static class Navbar
     {

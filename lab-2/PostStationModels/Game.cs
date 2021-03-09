@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace PostStation.Models
+namespace PostStationModels
 {
     public class Game
     {

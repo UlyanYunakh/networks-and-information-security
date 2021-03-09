@@ -1,11 +1,7 @@
-using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using PostStation.Models;
-using System.Linq;
-using Microsoft.EntityFrameworkCore;
+using PostStationModels;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Text;
@@ -14,11 +10,9 @@ namespace PostStation.Controllers
 {
     public class Home : Controller
     {
-        private StationContext db;
         private IHttpClientFactory _clientFactory;
-        public Home(StationContext context, IHttpClientFactory clientFactory)
+        public Home(IHttpClientFactory clientFactory)
         {
-            db = context;
             _clientFactory = clientFactory;
         }
 
