@@ -194,7 +194,7 @@ namespace PostStation.Controllers
                 return NoContent();
             }
         }
-        
+
         [HttpGet]
         public async Task<IActionResult> GamesAdd()
         {
@@ -224,7 +224,7 @@ namespace PostStation.Controllers
                 return NoContent();
             }
         }
-        
+
         [HttpPost]
         public async Task<IActionResult> GamesAdd(Game game)
         {
@@ -247,7 +247,7 @@ namespace PostStation.Controllers
                 return NoContent();
             }
         }
-        
+
         [HttpGet]
         public async Task<IActionResult> GamesEdit(int? id)
         {
@@ -290,7 +290,7 @@ namespace PostStation.Controllers
                 return NoContent();
             }
         }
-        
+
         [HttpPost]
         public async Task<IActionResult> GameEdit(Game game)
         {
@@ -313,7 +313,7 @@ namespace PostStation.Controllers
                 return NoContent();
             }
         }
-        
+
         [HttpGet]
         public async Task<IActionResult> GamesDelete(int? id)
         {
@@ -485,112 +485,248 @@ namespace PostStation.Controllers
             }
         }
 
-// *** "Platforms" actions section ***
+        // *** "Platforms" actions section ***
 
         [HttpGet]
-        public IActionResult Platforms()
+        public async Task<IActionResult> Platforms()
         {
-            return View();
+            try
+            {
+                var client = _clientFactory.CreateClient("poststation");
+                var responce = await client.GetAsync("api/platforms");
+                responce.EnsureSuccessStatusCode();
+
+                ViewBag.Platforms = JsonConvert
+                    .DeserializeObject<List<Platform>>(
+                        responce.Content.ReadAsStringAsync().Result
+                    );
+
+                return View();
+            }
+            catch
+            {
+                return NoContent();
+            }
         }
+
         [HttpGet]
-        public IActionResult PlatformsAdd()
-        {
-            return View();
-        }
+        public IActionResult PlatformsAdd() => View();
+
         [HttpPost]
-        public async Task<IActionResult> PlatformsSave(Platform platform)
+        public async Task<IActionResult> PlatformsAdd(Platform platform)
         {
-            db.Platforms.Update(platform);
-            await db.SaveChangesAsync();
-            return RedirectToAction("Platforms");
+            try
+            {
+                var platformJson = new StringContent(
+                    JsonConvert.SerializeObject(platform),
+                    Encoding.UTF8,
+                    "application/json"
+                );
+
+                var client = _clientFactory.CreateClient("poststation");
+                var responce = await client.PostAsync("/api/platforms", platformJson);
+                responce.EnsureSuccessStatusCode();
+
+                return RedirectToAction("Platforms");
+            }
+            catch
+            {
+                return NoContent();
+            }
         }
+
         [HttpGet]
         public async Task<IActionResult> PlatformsEdit(int? id)
         {
-            if (id != null)
+            try
             {
-                Platform platform = await db.Platforms.FirstOrDefaultAsync(p => p.Id == id);
-                if (platform != null)
+                if (id == null)
                 {
-                    return View(platform);
+                    return NoContent();
                 }
+
+                var client = _clientFactory.CreateClient("poststation");
+                var responce = await client.GetAsync($"api/platforms/{id}");
+                responce.EnsureSuccessStatusCode();
+
+                var platform = JsonConvert
+                    .DeserializeObject<Platform>(
+                        responce.Content.ReadAsStringAsync().Result
+                    );
+
+                return View(platform);
             }
-            return NotFound();
+            catch
+            {
+                return NoContent();
+            }
         }
+
+        [HttpPost]
+        public async Task<IActionResult> PlatformsEdit(Platform platform)
+        {
+            try
+            {
+                var platformJson = new StringContent(
+                    JsonConvert.SerializeObject(platform),
+                    Encoding.UTF8,
+                    "application/json"
+                );
+
+                var client = _clientFactory.CreateClient("poststation");
+                var responce = await client.PutAsync("/api/platforms", platformJson);
+                responce.EnsureSuccessStatusCode();
+
+                return RedirectToAction("Platforms");
+            }
+            catch
+            {
+                return NoContent();
+            }
+        }
+
         [HttpGet]
         public async Task<IActionResult> PlatformsDelete(int? id)
         {
-            if (id != null)
+            try
             {
-                Platform platform = await db.Platforms.FirstOrDefaultAsync(p => p.Id == id);
-                if (platform != null)
+                if (id == null)
                 {
-                    var games = db.Games.Where(g => g.PlatformId == platform.Id);
-                    foreach (Game game in games)
-                    {
-                        game.PlatformId = null;
-                    }
-
-                    db.Remove(platform);
-                    await db.SaveChangesAsync();
-                    return RedirectToAction("Platforms");
+                    return NoContent();
                 }
+
+                var client = _clientFactory.CreateClient("poststation");
+                var responce = await client.DeleteAsync($"api/platforms/{id}");
+                responce.EnsureSuccessStatusCode();
+
+                return RedirectToAction("Platforms");
             }
-            return NotFound();
+            catch
+            {
+                return NoContent();
+            }
         }
 
-// *** "Countries" actions section ***
+        // *** "Countries" actions section ***
 
         [HttpGet]
-        public IActionResult Countries()
+        public async Task<IActionResult> Countries()
         {
-            return View();
+            try
+            {
+                var client = _clientFactory.CreateClient("poststation");
+                var responce = await client.GetAsync("api/countries");
+                responce.EnsureSuccessStatusCode();
+
+                ViewBag.Countries = JsonConvert
+                    .DeserializeObject<List<Country>>(
+                        responce.Content.ReadAsStringAsync().Result
+                    );
+
+                return View();
+            }
+            catch
+            {
+                return NoContent();
+            }
         }
+        
         [HttpGet]
-        public IActionResult CountriesAdd()
-        {
-            return View();
-        }
+        public IActionResult CountriesAdd() => View();
+        
         [HttpPost]
-        public async Task<IActionResult> CountriesSave(Country country)
+        public async Task<IActionResult> CountriesAdd(Country country)
         {
-            db.Countries.Update(country);
-            await db.SaveChangesAsync();
-            return RedirectToAction("Countries");
+            try
+            {
+                var countryJson = new StringContent(
+                    JsonConvert.SerializeObject(country),
+                    Encoding.UTF8,
+                    "application/json"
+                );
+
+                var client = _clientFactory.CreateClient("poststation");
+                var responce = await client.PostAsync("/api/countries", countryJson);
+                responce.EnsureSuccessStatusCode();
+
+                return RedirectToAction("Countries");
+            }
+            catch
+            {
+                return NoContent();
+            }
         }
+        
         [HttpGet]
         public async Task<IActionResult> CountriesEdit(int? id)
         {
-            if (id != null)
+            try
             {
-                Country country = await db.Countries.FirstOrDefaultAsync(c => c.Id == id);
-                if (country != null)
+                if (id == null)
                 {
-                    return View(country);
+                    return NoContent();
                 }
+
+                var client = _clientFactory.CreateClient("poststation");
+                var responce = await client.GetAsync($"api/countries/{id}");
+                responce.EnsureSuccessStatusCode();
+
+                var country = JsonConvert
+                    .DeserializeObject<Country>(
+                        responce.Content.ReadAsStringAsync().Result
+                    );
+
+                return View(country);
             }
-            return NotFound();
+            catch
+            {
+                return NoContent();
+            }
         }
+
+        [HttpPost]
+        public async Task<IActionResult> CountriesEdit(Country country)
+        {
+            try
+            {
+                var countryJson = new StringContent(
+                    JsonConvert.SerializeObject(country),
+                    Encoding.UTF8,
+                    "application/json"
+                );
+
+                var client = _clientFactory.CreateClient("poststation");
+                var responce = await client.PutAsync("/api/countries", countryJson);
+                responce.EnsureSuccessStatusCode();
+
+                return RedirectToAction("Countries");
+            }
+            catch
+            {
+                return NoContent();
+            }
+        }
+
         [HttpGet]
         public async Task<IActionResult> CountriesDelete(int? id)
         {
-            if (id != null)
+            try
             {
-                Country country = await db.Countries.FirstOrDefaultAsync(c => c.Id == id);
-                if (country != null)
+                if (id == null)
                 {
-                    var devs = db.Developers.Where(d => d.CountryId == country.Id);
-                    foreach (Developer dev in devs)
-                    {
-                        dev.CountryId = null;
-                    }
-
-                    db.Remove(country);
-                    await db.SaveChangesAsync();
-                    return RedirectToAction("Countries");
+                    return NoContent();
                 }
+
+                var client = _clientFactory.CreateClient("poststation");
+                var responce = await client.DeleteAsync($"api/countries/{id}");
+                responce.EnsureSuccessStatusCode();
+
+                return RedirectToAction("Countries");
             }
-            return NotFound();
+            catch
+            {
+                return NoContent();
+            }
         }
     }
 }

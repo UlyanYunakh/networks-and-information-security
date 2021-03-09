@@ -21,69 +21,69 @@ namespace PostStationAPI.Controllers
         public async Task<ActionResult<IEnumerable<Country>>> Get()
             => await db.Countries.ToListAsync();
 
-        // [HttpGet("{id}")]
-        // public async Task<ActionResult<Developer>> Get(int id)
-        // {
-        //     Developer developer = await db.Developers.FirstOrDefaultAsync(d => d.Id == id);
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Country>> Get(int id)
+        {
+            Country country = await db.Countries.FirstOrDefaultAsync(c => c.Id == id);
 
-        //     if (developer == null)
-        //     {
-        //         return NotFound();
-        //     }
+            if (country == null)
+            {
+                return NotFound();
+            }
 
-        //     return new ObjectResult(developer);
-        // }
+            return new ObjectResult(country);
+        }
 
-        // [HttpPost]
-        // public async Task<ActionResult<Developer>> Post(Developer developer)
-        // {
-        //     if (developer == null)
-        //     {
-        //         return BadRequest();
-        //     }
+        [HttpPost]
+        public async Task<ActionResult<Country>> Post(Country country)
+        {
+            if (country == null)
+            {
+                return BadRequest();
+            }
 
-        //     db.Developers.Add(developer);
-        //     await db.SaveChangesAsync();
-        //     return Ok(developer);
-        // }
+            db.Countries.Add(country);
+            await db.SaveChangesAsync();
+            return Ok(country);
+        }
 
-        // [HttpPut]
-        // public async Task<ActionResult<Developer>> Put(Developer developer)
-        // {
-        //     if (developer == null)
-        //     {
-        //         return BadRequest();
-        //     }
+        [HttpPut]
+        public async Task<ActionResult<Country>> Put(Country country)
+        {
+            if (country == null)
+            {
+                return BadRequest();
+            }
 
-        //     if (!db.Developers.Any(d => d.Id == developer.Id))
-        //     {
-        //         return NotFound();
-        //     }
+            if (!db.Countries.Any(c => c.Id == country.Id))
+            {
+                return NotFound();
+            }
 
-        //     db.Update(developer);
-        //     await db.SaveChangesAsync();
-        //     return Ok(developer);
-        // }
+            db.Update(country);
+            await db.SaveChangesAsync();
+            return Ok(country);
+        }
 
-        // [HttpDelete("{id}")]
-        // public async Task<ActionResult<Developer>> Delete(int id)
-        // {
-        //     Developer developer = await db.Developers.FirstOrDefaultAsync(d => d.Id == id);
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<Country>> Delete(int id)
+        {
+            Country country = db.Countries.FirstOrDefault(c => c.Id == id);
 
-        //     if (developer == null)
-        //     {
-        //         return NotFound();
-        //     }
+            if (country == null)
+            {
+                return NotFound();
+            }
 
-        //     var games = db.Games.Where(g => g.DeveloperId == developer.Id);
-        //     foreach (Game game in games)
-        //     {
-        //         game.DeveloperId = null;
-        //     }
+            var devs = db.Developers.Where(d => d.CountryId == country.Id);
+            foreach (Developer dev in devs)
+            {
+                dev.CountryId = null;
+            }
 
-        //     db.Developers.Remove(developer);
-        //     await db.SaveChangesAsync();
-        //     return Ok(developer);
-        // }
+            db.Countries.Remove(country);
+            await db.SaveChangesAsync();
+            return Ok(country);
+        }
     }
 }

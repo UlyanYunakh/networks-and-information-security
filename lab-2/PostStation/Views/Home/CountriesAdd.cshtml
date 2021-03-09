@@ -1,12 +1,11 @@
 @model Country
-@inject StationContext db
 @{
     ViewBag.Title = "Добавить страну";
 }
 
 @await Html.PartialAsync("_Navbar", Navbar.Current.Countries)
 
-<form asp-action="CountriesSave">
+<form asp-action="CountriesAdd">
 
     <div class="form-floating my-2">
         <input type="text" class="form-control btn-warning bg-white" id="name" placeholder="Name" asp-for="Name"
