@@ -339,59 +339,150 @@ namespace PostStation.Controllers
         // *** "Developers" actions section ***
 
         [HttpGet]
-        public IActionResult Developers()
+        public async Task<IActionResult> Developers()
         {
-            return View();
+            try
+            {
+                var client = _clientFactory.CreateClient("poststation");
+                var responce = await client.GetAsync("api/developers");
+                responce.EnsureSuccessStatusCode();
+
+                ViewBag.Developers = JsonConvert
+                    .DeserializeObject<List<Developer>>(
+                        responce.Content.ReadAsStringAsync().Result
+                    );
+
+                return View();
+            }
+            catch
+            {
+                return NoContent();
+            }
         }
 
         [HttpGet]
-        public IActionResult DevelopersAdd()
+        public async Task<IActionResult> DevelopersAdd()
         {
-            return View();
+            try
+            {
+                var client = _clientFactory.CreateClient("poststation");
+                var responce = await client.GetAsync("api/countries");
+                responce.EnsureSuccessStatusCode();
+
+                ViewBag.Countries = JsonConvert
+                    .DeserializeObject<List<Country>>(
+                        responce.Content.ReadAsStringAsync().Result
+                    );
+
+                return View();
+            }
+            catch
+            {
+                return NoContent();
+            }
         }
 
         [HttpPost]
-        public async Task<IActionResult> DevelopersSave(Developer developer)
+        public async Task<IActionResult> DevelopersAdd(Developer developer)
         {
-            db.Developers.Update(developer);
-            await db.SaveChangesAsync();
-            return RedirectToAction("Developers");
+            try
+            {
+                var developersJson = new StringContent(
+                    JsonConvert.SerializeObject(developer),
+                    Encoding.UTF8,
+                    "application/json"
+                );
+
+                var client = _clientFactory.CreateClient("poststation");
+                var responce = await client.PostAsync("/api/developers", developersJson);
+                responce.EnsureSuccessStatusCode();
+
+                return RedirectToAction("Developers");
+            }
+            catch
+            {
+                return NoContent();
+            }
         }
 
         [HttpGet]
         public async Task<IActionResult> DevelopersEdit(int? id)
         {
-            if (id != null)
+            try
             {
-                Developer developer = await db.Developers.FirstOrDefaultAsync(d => d.Id == id);
-                if (developer != null)
+                if (id == null)
                 {
-                    return View(developer);
+                    return NoContent();
                 }
+
+                var client = _clientFactory.CreateClient("poststation");
+                var responce = await client.GetAsync($"api/developers/{id}");
+                responce.EnsureSuccessStatusCode();
+
+                var developer = JsonConvert
+                    .DeserializeObject<Developer>(
+                        responce.Content.ReadAsStringAsync().Result
+                    );
+
+                responce = await client.GetAsync("api/countries");
+                responce.EnsureSuccessStatusCode();
+
+                ViewBag.Countries = JsonConvert
+                    .DeserializeObject<List<Country>>(
+                        responce.Content.ReadAsStringAsync().Result
+                    );
+
+                return View(developer);
             }
-            return NotFound();
+            catch
+            {
+                return NoContent();
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DevelopersEdit(Developer developer)
+        {
+            try
+            {
+                var developerJson = new StringContent(
+                    JsonConvert.SerializeObject(developer),
+                    Encoding.UTF8,
+                    "application/json"
+                );
+
+                var client = _clientFactory.CreateClient("poststation");
+                var responce = await client.PutAsync("/api/developers", developerJson);
+                responce.EnsureSuccessStatusCode();
+
+                return RedirectToAction("Developers");
+            }
+            catch
+            {
+                return NoContent();
+            }
         }
 
         [HttpGet]
         public async Task<IActionResult> DevelopersDelete(int? id)
         {
-            if (id != null)
+            try
             {
-                Developer developer = await db.Developers.FirstOrDefaultAsync(d => d.Id == id);
-                if (developer != null)
+                if (id == null)
                 {
-                    var games = db.Games.Where(g => g.DeveloperId == developer.Id);
-                    foreach (Game game in games)
-                    {
-                        game.DeveloperId = null;
-                    }
-
-                    db.Remove(developer);
-                    await db.SaveChangesAsync();
-                    return RedirectToAction("Developers");
+                    return NoContent();
                 }
+
+                var client = _clientFactory.CreateClient("poststation");
+                var responce = await client.DeleteAsync($"api/developers/{id}");
+                responce.EnsureSuccessStatusCode();
+
+                return RedirectToAction("Developers");
             }
-            return NotFound();
+            catch
+            {
+                return NoContent();
+            }
         }
 
 // *** "Platforms" actions section ***

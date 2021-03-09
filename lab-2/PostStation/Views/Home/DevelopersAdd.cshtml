@@ -1,12 +1,11 @@
 @model Developer
-@inject StationContext db
 @{
     ViewBag.Title = "Добавить разработчика";
 }
 
 @await Html.PartialAsync("_Navbar", Navbar.Current.Developers)
 
-<form asp-action="DevelopersSave">
+<form asp-action="DevelopersAdd">
 
     <div class="form-floating my-2">
         <input type="text" class="form-control" id="name" placeholder="Name" asp-for="Name" required>
@@ -16,7 +15,7 @@
     <div class="form-floating mb-2">
         <select class="form-select" id="country" aria-label="select" asp-for="CountryId">
             <option>None</option>
-            @foreach (Country country in db.Countries)
+            @foreach (Country country in ViewBag.Countries)
             {
                 <option value="@country.Id">@country.Name</option>
             }

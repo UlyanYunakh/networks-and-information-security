@@ -1,4 +1,3 @@
-@inject StationContext db
 @{
     ViewBag.Title = "Разработчики";
 }
@@ -8,7 +7,7 @@
 <a class="btn btn-outline-primary"  asp-action="DevelopersAdd">Добавить</a>
 
 <div class="d-flex flex-wrap">
-    @foreach (var dev in db.Developers.Include((d => d.Country)))
+    @foreach (var dev in ViewBag.Developers)
     {
         <div class="p-2 m-2 bg-primary text-white rounded d-flex align-items-center">
             <p class="m-0">@dev.Name
