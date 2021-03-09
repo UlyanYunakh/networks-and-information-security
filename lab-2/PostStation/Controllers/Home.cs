@@ -174,56 +174,169 @@ namespace PostStation.Controllers
         // *** "Games" actions section ***
 
         [HttpGet]
-        public IActionResult Games()
+        public async Task<IActionResult> Games()
         {
-            return View();
+            try
+            {
+                var client = _clientFactory.CreateClient("poststation");
+                var responce = await client.GetAsync("api/games");
+                responce.EnsureSuccessStatusCode();
+
+                ViewBag.Games = JsonConvert
+                    .DeserializeObject<List<Game>>(
+                        responce.Content.ReadAsStringAsync().Result
+                    );
+
+                return View();
+            }
+            catch
+            {
+                return NoContent();
+            }
         }
+        
         [HttpGet]
-        public IActionResult GamesAdd()
+        public async Task<IActionResult> GamesAdd()
         {
-            return View();
+            try
+            {
+                var client = _clientFactory.CreateClient("poststation");
+                var responce = await client.GetAsync("api/devs");
+                responce.EnsureSuccessStatusCode();
+
+                ViewBag.Devs = JsonConvert
+                    .DeserializeObject<List<Developer>>(
+                        responce.Content.ReadAsStringAsync().Result
+                    );
+
+                responce = await client.GetAsync("api/platforms");
+                responce.EnsureSuccessStatusCode();
+
+                ViewBag.Platforms = JsonConvert
+                    .DeserializeObject<List<Platform>>(
+                        responce.Content.ReadAsStringAsync().Result
+                    );
+
+                return View();
+            }
+            catch
+            {
+                return NoContent();
+            }
         }
+        
         [HttpPost]
-        public async Task<IActionResult> GamesSave(Game game)
+        public async Task<IActionResult> GamesAdd(Game game)
         {
-            db.Games.Update(game);
-            await db.SaveChangesAsync();
-            return RedirectToAction("Games");
+            try
+            {
+                var gameJson = new StringContent(
+                    JsonConvert.SerializeObject(game),
+                    Encoding.UTF8,
+                    "application/json"
+                );
+
+                var client = _clientFactory.CreateClient("poststation");
+                var responce = await client.PostAsync("/api/games", gameJson);
+                responce.EnsureSuccessStatusCode();
+
+                return RedirectToAction("Games");
+            }
+            catch
+            {
+                return NoContent();
+            }
         }
+        
         [HttpGet]
         public async Task<IActionResult> GamesEdit(int? id)
         {
-            if (id != null)
+            try
             {
-                Game game = await db.Games.FirstOrDefaultAsync(g => g.Id == id);
-                if (game != null)
+                if (id == null)
                 {
-                    return View(game);
+                    return NoContent();
                 }
+
+                var client = _clientFactory.CreateClient("poststation");
+                var responce = await client.GetAsync($"api/games/{id}");
+                responce.EnsureSuccessStatusCode();
+
+                var game = JsonConvert
+                    .DeserializeObject<Game>(
+                        responce.Content.ReadAsStringAsync().Result
+                    );
+
+                responce = await client.GetAsync("api/devs");
+                responce.EnsureSuccessStatusCode();
+
+                ViewBag.Devs = JsonConvert
+                    .DeserializeObject<List<Developer>>(
+                        responce.Content.ReadAsStringAsync().Result
+                    );
+
+                responce = await client.GetAsync("api/platforms");
+                responce.EnsureSuccessStatusCode();
+
+                ViewBag.Platforms = JsonConvert
+                    .DeserializeObject<List<Platform>>(
+                        responce.Content.ReadAsStringAsync().Result
+                    );
+
+                return View(game);
             }
-            return NotFound();
+            catch
+            {
+                return NoContent();
+            }
         }
+        
+        [HttpPost]
+        public async Task<IActionResult> GameEdit(Game game)
+        {
+            try
+            {
+                var gameJson = new StringContent(
+                    JsonConvert.SerializeObject(game),
+                    Encoding.UTF8,
+                    "application/json"
+                );
+
+                var client = _clientFactory.CreateClient("poststation");
+                var responce = await client.PutAsync("/api/games", gameJson);
+                responce.EnsureSuccessStatusCode();
+
+                return RedirectToAction("Games");
+            }
+            catch
+            {
+                return NoContent();
+            }
+        }
+        
         [HttpGet]
         public async Task<IActionResult> GamesDelete(int? id)
         {
-            if (id != null)
+            try
             {
-                Game game = await db.Games.FirstOrDefaultAsync(g => g.Id == id);
-                if (game != null)
+                if (id == null)
                 {
-                    var posts = db.Posts.Where(p => p.GameId == game.Id);
-                    foreach (Post screenshot in posts)
-                    {
-                        screenshot.GameId = null;
-                    }
-
-                    db.Remove(game);
-                    await db.SaveChangesAsync();
-                    return RedirectToAction("Games");
+                    return NoContent();
                 }
+
+                var client = _clientFactory.CreateClient("poststation");
+                var responce = await client.DeleteAsync($"api/games/{id}");
+                responce.EnsureSuccessStatusCode();
+
+                return RedirectToAction("Games");
             }
-            return NotFound();
+            catch
+            {
+                return NoContent();
+            }
         }
+
+        // *** "Developers" actions section ***
 
         [HttpGet]
         public IActionResult Developers()

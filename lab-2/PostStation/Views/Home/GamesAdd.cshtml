@@ -1,12 +1,11 @@
 @model Game
-@inject StationContext db
 @{
     ViewBag.Title = "Добавить игру";
 }
 
 @await Html.PartialAsync("_Navbar", Navbar.Current.Games)
 
-<form asp-action="GamesSave">
+<form asp-action="GamesAdd">
 
     <div class="form-floating my-2">
         <input type="text" class="form-control btn-success bg-white text-dark" id="name" placeholder="Name"
@@ -18,7 +17,7 @@
         <select class="form-select btn-success bg-white text-dark" id="developer" aria-label="select"
             asp-for="DeveloperId">
             <option>None</option>
-            @foreach (Developer developer in db.Developers)
+            @foreach (Developer developer in ViewBag.Devs)
             {
                 <option value="@developer.Id">@developer.Name</option>
             }
@@ -30,7 +29,7 @@
         <select class="form-select btn-success bg-white text-dark" id="platform" aria-label="select"
             asp-for="PlatformId">
             <option>None</option>
-            @foreach (Platform platform in db.Platforms)
+            @foreach (Platform platform in ViewBag.Platforms)
             {
                 <option value="@platform.Id">@platform.Name</option>
             }

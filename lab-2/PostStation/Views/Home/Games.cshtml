@@ -1,4 +1,3 @@
-@inject StationContext db
 @{
     ViewBag.Title = "Игры";
 }
@@ -8,7 +7,7 @@
 <a class="btn btn-outline-success" asp-action="GamesAdd">Добавить</a>
 
 <div class="d-flex flex-wrap">
-    @foreach (Game game in db.Games.Include(g => g.Developer).Include(g => g.Platform))
+    @foreach (Game game in ViewBag.Games)
     {
         <div class="p-2 m-2 bg-success text-white rounded d-flex align-items-center">
             <p class="m-0">@game.Name
