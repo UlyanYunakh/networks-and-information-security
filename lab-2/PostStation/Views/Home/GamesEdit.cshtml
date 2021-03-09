@@ -17,7 +17,7 @@
         <select class="form-select btn-success bg-white text-dark" id="developer" aria-label="select"
             asp-for="DeveloperId">
             <option>None</option>
-            @foreach (Developer developer in ViewBag.Devs)
+            @foreach (Developer developer in ViewBag.Developers)
             {
                 <option value="@developer.Id">@developer.Name</option>
             }

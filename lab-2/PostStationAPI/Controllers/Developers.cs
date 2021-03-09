@@ -8,10 +8,10 @@ namespace PostStationAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class Devs : ControllerBase
+    public class Developers : ControllerBase
     {
         private StationContext db;
-        public Devs(StationContext context)
+        public Developers(StationContext context)
         {
             db = context;
         }

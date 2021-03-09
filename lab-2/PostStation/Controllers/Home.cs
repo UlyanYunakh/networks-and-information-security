@@ -201,10 +201,10 @@ namespace PostStation.Controllers
             try
             {
                 var client = _clientFactory.CreateClient("poststation");
-                var responce = await client.GetAsync("api/devs");
+                var responce = await client.GetAsync("api/developers");
                 responce.EnsureSuccessStatusCode();
 
-                ViewBag.Devs = JsonConvert
+                ViewBag.Developers = JsonConvert
                     .DeserializeObject<List<Developer>>(
                         responce.Content.ReadAsStringAsync().Result
                     );
@@ -267,10 +267,10 @@ namespace PostStation.Controllers
                         responce.Content.ReadAsStringAsync().Result
                     );
 
-                responce = await client.GetAsync("api/devs");
+                responce = await client.GetAsync("api/developers");
                 responce.EnsureSuccessStatusCode();
 
-                ViewBag.Devs = JsonConvert
+                ViewBag.Developers = JsonConvert
                     .DeserializeObject<List<Developer>>(
                         responce.Content.ReadAsStringAsync().Result
                     );
@@ -343,11 +343,13 @@ namespace PostStation.Controllers
         {
             return View();
         }
+
         [HttpGet]
         public IActionResult DevelopersAdd()
         {
             return View();
         }
+
         [HttpPost]
         public async Task<IActionResult> DevelopersSave(Developer developer)
         {
@@ -355,6 +357,7 @@ namespace PostStation.Controllers
             await db.SaveChangesAsync();
             return RedirectToAction("Developers");
         }
+
         [HttpGet]
         public async Task<IActionResult> DevelopersEdit(int? id)
         {
@@ -368,6 +371,7 @@ namespace PostStation.Controllers
             }
             return NotFound();
         }
+
         [HttpGet]
         public async Task<IActionResult> DevelopersDelete(int? id)
         {
@@ -389,6 +393,8 @@ namespace PostStation.Controllers
             }
             return NotFound();
         }
+
+// *** "Platforms" actions section ***
 
         [HttpGet]
         public IActionResult Platforms()
@@ -441,6 +447,8 @@ namespace PostStation.Controllers
             }
             return NotFound();
         }
+
+// *** "Countries" actions section ***
 
         [HttpGet]
         public IActionResult Countries()
