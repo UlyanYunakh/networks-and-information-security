@@ -1,0 +1,81 @@
+﻿@page "/"
+@inject IHttpClientFactory _clientFactory
+
+@if (posts == null)
+{
+    <div class="d-flex justify-content-center">
+    <div class="spinner-border" role="status">
+        <span class="visually-hidden">Загрузка...</span>
+    </div>
+</div>
+}
+else
+{
+    <a class="btn btn-outline-dark" asp-action="MainAdd">Добавить</a>
+
+    <div class="d-flex flex-column">
+        @foreach (Post post in posts)
+        {
+            <div class="py-1 px-3 my-3 bg-white rounded border border-secondary">
+                <div class="d-flex justify-content-end">
+                    <a class="btn p-1" asp-action="MainEdit" asp-route-id="@post.Id">
+                        <i class="bi-pencil"></i>
+                    </a>
+                    <a class="btn p-1" asp-action="MainDelete" asp-route-id="@post.Id">
+                        <i class="bi-x"></i>
+                    </a>
+                </div>
+                @if (post.Game != null)
+                {
+                    <h4>
+                        <i class="bi-tv"></i>
+                        @post.Game.Name
+                    </h4>
+                    <h5>
+                        @if(post.Game.Developer != null)
+                        {
+                            <div>
+                                <i class="bi-people"></i>
+                                @post.Game.Developer.Name
+                            </div>
+
+                            @if(post.Game.Developer.Country != null)
+                            {
+                                <div>
+                                    <i class="bi-geo-alt"></i>
+                                    @post.Game.Developer.Country.Name
+                                </div>
+                            }
+                        }
+                        @if(post.Game.Platform != null)
+                        {
+                            <div>
+                                <i class="bi-controller"></i>
+                                @post.Game.Platform.Name
+                            </div>
+                        }
+                    </h5>
+                }
+                <p>@post.Text</p>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private List<Post> posts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var client = _clientFactory.CreateClient("poststation");
+        var responce = await client.GetAsync("api/posts");
+
+        if(responce.IsSuccessStatusCode)
+        {
+            posts = JsonConvert
+                .DeserializeObject<List<Post>>(
+                    responce.Content.ReadAsStringAsync().Result
+                );
+        }
+    }
+}
