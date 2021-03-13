@@ -1,0 +1,22 @@
+@{
+    ViewBag.Title = "Страны";
+}
+
+@await Html.PartialAsync("_Navbar", Navbar.Current.Countries)
+
+<a class="btn btn-outline-warning" asp-action="CountriesAdd">Добавить</a>
+
+<div class="d-flex flex-wrap">
+    @foreach (Country country in ViewBag.Countries)
+    {
+        <div class="p-2 m-2 bg-warning rounded d-flex align-items-center">
+            <p class="m-0">@country.Name</p>
+            <a class="btn p-1" asp-action="CountriesEdit" asp-route-id="@country.Id">
+                <i class="bi-pencil"></i>
+            </a>
+            <a class="btn p-1" asp-action="CountriesDelete" asp-route-id="@country.Id">
+                <i class="bi-x"></i>
+            </a>
+        </div>
+    }
+</div>
