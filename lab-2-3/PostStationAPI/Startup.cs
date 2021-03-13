@@ -23,11 +23,22 @@ namespace PostStationAPI
                 options.UseNpgsql(sqlConnectionString);
             });
 
+            services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(builder =>
+                {
+                    builder.WithOrigins("*");
+                    builder.WithHeaders("*");
+                    builder.WithMethods("*");
+                });
+            });
+
             services.AddControllers()
                 .AddNewtonsoftJson(options =>
                 {
                     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
                 });
+
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -38,6 +49,8 @@ namespace PostStationAPI
             }
 
             app.UseRouting();
+
+            app.UseCors();
 
             app.UseEndpoints(endpoints =>
             {
