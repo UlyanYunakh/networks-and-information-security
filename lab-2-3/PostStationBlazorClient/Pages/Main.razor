@@ -1,27 +1,28 @@
 ﻿@page "/"
+@inject NavigationManager NavigationManager
 @inject IHttpClientFactory _clientFactory
+
+<a class="btn btn-outline-dark" @onclick="ToForm">Добавить</a>
 
 @if (posts == null)
 {
-    <div class="d-flex justify-content-center">
-    <div class="spinner-border" role="status">
-        <span class="visually-hidden">Загрузка...</span>
+    <div class="d-flex justify-content-center mt-3">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Загрузка...</span>
+        </div>
     </div>
-</div>
 }
 else
 {
-    <a class="btn btn-outline-dark" asp-action="MainAdd">Добавить</a>
-
     <div class="d-flex flex-column">
         @foreach (Post post in posts)
         {
             <div class="py-1 px-3 my-3 bg-white rounded border border-secondary">
                 <div class="d-flex justify-content-end">
-                    <a class="btn p-1" asp-action="MainEdit" asp-route-id="@post.Id">
+                    <a class="btn p-1" @onclick="() => ToForm(post.Id)">
                         <i class="bi-pencil"></i>
                     </a>
-                    <a class="btn p-1" asp-action="MainDelete" asp-route-id="@post.Id">
+                    <a class="btn p-1" @onclick="() => Delete(post.Id)">
                         <i class="bi-x"></i>
                     </a>
                 </div>
@@ -65,7 +66,7 @@ else
 @code {
     private List<Post> posts;
 
-    protected override async Task OnInitializedAsync()
+    private async Task UpdateList()
     {
         var client = _clientFactory.CreateClient("poststation");
         var responce = await client.GetAsync("api/posts");
@@ -76,6 +77,22 @@ else
                 .DeserializeObject<List<Post>>(
                     responce.Content.ReadAsStringAsync().Result
                 );
+        }
+    }
+
+    protected override async Task OnInitializedAsync() => await UpdateList();
+
+    private void ToForm() => NavigationManager.NavigateTo("mainForm");
+    private void ToForm(int id) => NavigationManager.NavigateTo($"mainForm/{id}");
+    private async void Delete(int id)
+    {
+        var client = _clientFactory.CreateClient("poststation");
+        var responce = await client.DeleteAsync($"api/posts/{id}");
+
+        if(responce.IsSuccessStatusCode)
+        {
+            await UpdateList();
+            this.StateHasChanged();
         }
     }
 }
