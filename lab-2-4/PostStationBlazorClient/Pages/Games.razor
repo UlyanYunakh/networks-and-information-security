@@ -62,8 +62,8 @@ else
 
     protected override async Task OnInitializedAsync() => await UpdateList();
 
-    private void ToForm() => NavigationManager.NavigateTo("gamesForm");
-    private void ToForm(int id) => NavigationManager.NavigateTo($"gamesForm/{id}");
+    private void ToForm() => NavigationManager.NavigateTo("add/games");
+    private void ToForm(int id) => NavigationManager.NavigateTo($"edit/games/{id}");
     private async void Delete(int id)
     {
         var client = _clientFactory.CreateClient("poststation");

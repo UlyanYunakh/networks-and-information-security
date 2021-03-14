@@ -50,9 +50,9 @@ else
 
     protected override async Task OnInitializedAsync() => await UpdateList();
     
-    private void ToForm() => NavigationManager.NavigateTo("countriesForm");
+    private void ToForm() => NavigationManager.NavigateTo("add/countries");
     
-    private void ToForm(int id) => NavigationManager.NavigateTo($"countriesForm/{id}");
+    private void ToForm(int id) => NavigationManager.NavigateTo($"edit/countries/{id}");
     
     private async void Delete(int id)
     {

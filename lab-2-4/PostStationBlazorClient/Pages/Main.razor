@@ -1,4 +1,5 @@
 ﻿@page "/"
+
 @inject NavigationManager NavigationManager
 @inject IHttpClientFactory _clientFactory
 
@@ -82,8 +83,8 @@ else
 
     protected override async Task OnInitializedAsync() => await UpdateList();
 
-    private void ToForm() => NavigationManager.NavigateTo("mainForm");
-    private void ToForm(int id) => NavigationManager.NavigateTo($"mainForm/{id}");
+    private void ToForm() => NavigationManager.NavigateTo("add/posts");
+    private void ToForm(int id) => NavigationManager.NavigateTo($"edit/posts/{id}");
     private async void Delete(int id)
     {
         var client = _clientFactory.CreateClient("poststation");

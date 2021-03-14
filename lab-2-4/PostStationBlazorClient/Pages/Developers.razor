@@ -57,9 +57,9 @@ else
 
     protected override async Task OnInitializedAsync() => await UpdateList();
     
-    private void ToForm() => NavigationManager.NavigateTo("developersForm");
+    private void ToForm() => NavigationManager.NavigateTo("add/developers");
     
-    private void ToForm(int id) => NavigationManager.NavigateTo($"developersForm/{id}");
+    private void ToForm(int id) => NavigationManager.NavigateTo($"edit/developers/{id}");
     
     private async void Delete(int id)
     {
