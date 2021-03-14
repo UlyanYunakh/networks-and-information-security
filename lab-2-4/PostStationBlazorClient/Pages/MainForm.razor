@@ -15,8 +15,6 @@
 else
 {
     <EditForm Model="@post" OnValidSubmit="@Handle">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
         <div class="form-floating my-2">
             <InputTextArea class="form-control btn-dark bg-white text-dark" id="text" placeholder="Name"
                 style="height: 150px;resize: none" maxlength="280" required @bind-Value="post.Text">
