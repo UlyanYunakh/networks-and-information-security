@@ -1,3 +1,68 @@
 @page "/platforms"
 
-<h1>Платформы</h1>
+@inject NavigationManager NavigationManager
+@inject IHttpClientFactory _clientFactory
+
+<a class="btn btn-outline-info" @onclick="ToForm">Добавить</a>
+
+@if (platforms == null)
+{
+    <div class="d-flex justify-content-center mt-3">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Загрузка...</span>
+        </div>
+    </div>
+}
+else
+{
+    <div class="d-flex flex-wrap">
+        @foreach (Platform platform in platforms)
+        {  
+            <div class="p-2 m-2 bg-info rounded d-flex align-items-center">
+                <p class="m-0">@platform.Name</p>
+                <a class="btn p-1" @onclick="() => ToForm(platform.Id)">
+                    <i class="bi-pencil"></i>
+                </a>
+                <a class="btn p-1" @onclick="() => Delete(platform.Id)">
+                    <i class="bi-x"></i>
+                </a>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private List<Platform> platforms;
+
+    private async Task UpdateList()
+    {
+        var client = _clientFactory.CreateClient("poststation");
+        var responce = await client.GetAsync("api/platforms");
+
+        if(responce.IsSuccessStatusCode)
+        {
+            platforms = JsonConvert
+                .DeserializeObject<List<Platform>>(
+                    responce.Content.ReadAsStringAsync().Result
+                );
+        }
+    }
+
+    protected override async Task OnInitializedAsync() => await UpdateList();
+    
+    private void ToForm() => NavigationManager.NavigateTo("platformsForm");
+    
+    private void ToForm(int id) => NavigationManager.NavigateTo($"platformsForm/{id}");
+    
+    private async void Delete(int id)
+    {
+        var client = _clientFactory.CreateClient("poststation");
+        var responce = await client.DeleteAsync($"api/platforms/{id}");
+
+        if(responce.IsSuccessStatusCode)
+        {
+            await UpdateList();
+            this.StateHasChanged();
+        }
+    }
+}

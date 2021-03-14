@@ -1,0 +1,87 @@
+@page "/platformsForm"
+@page "/platformsForm/{PlatformId}"
+
+@inject NavigationManager NavigationManager
+@inject IHttpClientFactory _clientFactory
+
+<EditForm Model="@platform" OnValidSubmit="@Handle">
+    <div class="form-floating my-2">
+        <InputText class="form-control btn-info bg-white" id="name" placeholder="Name" 
+            required @bind-Value="platform.Name">
+        </InputText>
+        <label for="name">Название</label>
+    </div>
+    <div class="form-group d-grid gap-2">
+        <button type="submit" class="btn btn-info">
+            @if(PlatformId == null)
+            {
+                @:Добавить
+            }
+            else
+            {
+                @:Сохранить
+            }
+        </button>
+    </div>
+</EditForm>
+@if(isError)
+{
+    <p class="text-danger my-2">Что-то не так, попробуйте повторить позже</p>
+}
+
+@code {
+    [Parameter]
+    public string PlatformId { get; set; }
+
+    private Platform platform = new Platform();
+    private bool isError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if(PlatformId == null)
+            return;
+
+        var client = _clientFactory.CreateClient("poststation");
+        var responce = await client.GetAsync($"api/platforms/{PlatformId}");
+
+        if (responce.IsSuccessStatusCode)
+        {
+            platform = JsonConvert
+                .DeserializeObject<Platform>(
+                    responce.Content.ReadAsStringAsync().Result
+                );
+        }
+    }
+
+    private async void Handle()
+    {
+        var platformJson = new StringContent(
+            JsonConvert.SerializeObject(platform),
+            Encoding.UTF8,
+            "application/json"
+        );
+
+        if(PlatformId == null)
+        {
+            var client = _clientFactory.CreateClient("poststation");
+            var responce = await client.PostAsync("/api/platforms", platformJson);
+
+            isError = false;
+            if(responce.IsSuccessStatusCode)
+                NavigationManager.NavigateTo("platforms");
+            else
+                isError = true;
+        }
+        else
+        {
+            var client = _clientFactory.CreateClient("poststation");
+            var responce = await client.PutAsync("/api/platforms", platformJson);
+
+            isError = false;
+            if(responce.IsSuccessStatusCode)
+                NavigationManager.NavigateTo("platforms");
+            else
+                isError = true;
+        }
+    }
+}

@@ -1,3 +1,68 @@
 @page "/countries"
 
-<h1>Страны</h1>
+@inject NavigationManager NavigationManager
+@inject IHttpClientFactory _clientFactory
+
+<a class="btn btn-outline-warning" @onclick="ToForm">Добавить</a>
+
+@if (countries == null)
+{
+    <div class="d-flex justify-content-center mt-3">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Загрузка...</span>
+        </div>
+    </div>
+}
+else
+{
+    <div class="d-flex flex-wrap">
+        @foreach (Country country in countries)
+        {  
+            <div class="p-2 m-2 bg-warning rounded d-flex align-items-center">
+                <p class="m-0">@country.Name</p>
+                <a class="btn p-1" @onclick="() => ToForm(country.Id)">
+                    <i class="bi-pencil"></i>
+                </a>
+                <a class="btn p-1" @onclick="() => Delete(country.Id)">
+                    <i class="bi-x"></i>
+                </a>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private List<Country> countries;
+
+    private async Task UpdateList()
+    {
+        var client = _clientFactory.CreateClient("poststation");
+        var responce = await client.GetAsync("api/countries");
+
+        if(responce.IsSuccessStatusCode)
+        {
+            countries = JsonConvert
+                .DeserializeObject<List<Country>>(
+                    responce.Content.ReadAsStringAsync().Result
+                );
+        }
+    }
+
+    protected override async Task OnInitializedAsync() => await UpdateList();
+    
+    private void ToForm() => NavigationManager.NavigateTo("countriesForm");
+    
+    private void ToForm(int id) => NavigationManager.NavigateTo($"countriesForm/{id}");
+    
+    private async void Delete(int id)
+    {
+        var client = _clientFactory.CreateClient("poststation");
+        var responce = await client.DeleteAsync($"api/countries/{id}");
+
+        if(responce.IsSuccessStatusCode)
+        {
+            await UpdateList();
+            this.StateHasChanged();
+        }
+    }
+}

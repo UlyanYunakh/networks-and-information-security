@@ -1,0 +1,87 @@
+@page "/countriesForm"
+@page "/countriesForm/{CountryId}"
+
+@inject NavigationManager NavigationManager
+@inject IHttpClientFactory _clientFactory
+
+<EditForm Model="@country" OnValidSubmit="@Handle">
+    <div class="form-floating my-2">
+        <InputText class="form-control btn-warning bg-white" id="name" placeholder="Name" 
+            required @bind-Value="country.Name">
+        </InputText>
+        <label for="name">Название</label>
+    </div>
+    <div class="form-group d-grid gap-2">
+        <button type="submit" class="btn btn-warning">
+            @if(CountryId == null)
+            {
+                @:Добавить
+            }
+            else
+            {
+                @:Сохранить
+            }
+        </button>
+    </div>
+</EditForm>
+@if(isError)
+{
+    <p class="text-danger my-2">Что-то не так, попробуйте повторить позже</p>
+}
+
+@code {
+    [Parameter]
+    public string CountryId { get; set; }
+
+    private Country country = new Country();
+    private bool isError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if(CountryId == null)
+            return;
+
+        var client = _clientFactory.CreateClient("poststation");
+        var responce = await client.GetAsync($"api/countries/{CountryId}");
+
+        if (responce.IsSuccessStatusCode)
+        {
+            country = JsonConvert
+                .DeserializeObject<Country>(
+                    responce.Content.ReadAsStringAsync().Result
+                );
+        }
+    }
+
+    private async void Handle()
+    {
+        var countryJson = new StringContent(
+            JsonConvert.SerializeObject(country),
+            Encoding.UTF8,
+            "application/json"
+        );
+
+        if(CountryId == null)
+        {
+            var client = _clientFactory.CreateClient("poststation");
+            var responce = await client.PostAsync("/api/countries", countryJson);
+
+            isError = false;
+            if(responce.IsSuccessStatusCode)
+                NavigationManager.NavigateTo("countries");
+            else
+                isError = true;
+        }
+        else
+        {
+            var client = _clientFactory.CreateClient("poststation");
+            var responce = await client.PutAsync("/api/countries", countryJson);
+
+            isError = false;
+            if(responce.IsSuccessStatusCode)
+                NavigationManager.NavigateTo("countries");
+            else
+                isError = true;
+        }
+    }
+}

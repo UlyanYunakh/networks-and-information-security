@@ -16,13 +16,13 @@ else
 {
     <EditForm Model="@developer" OnValidSubmit="@Handle">
         <div class="form-floating my-2">
-            <InputText class="form-control" id="name" placeholder="Name" 
+            <InputText class="form-control btn-primary bg-white text-dark" id="name" placeholder="Name" 
                 required @bind-Value="developer.Name">
             </InputText>
             <label for="name">Название</label>
         </div>
         <div class="form-floating mb-2">
-            <InputSelect class="form-select" id="country" aria-label="select"
+            <InputSelect class="form-select btn-primary bg-white text-dark" id="country" aria-label="select"
                 @bind-Value="developer.CountryId">
                 <option>None</option>
                 @foreach (Country country in countries)
