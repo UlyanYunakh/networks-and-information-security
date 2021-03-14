@@ -1,0 +1,143 @@
+@page "/gamesForm"
+@page "/gamesForm/{GameId}"
+
+@inject NavigationManager NavigationManager
+@inject IHttpClientFactory _clientFactory
+
+@if (developers == null || platforms == null)
+{
+    <div class="d-flex justify-content-center mt-3">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Загрузка...</span>
+        </div>
+    </div>
+}
+else
+{
+    <EditForm Model="@game" OnValidSubmit="@Handle">
+        <div class="form-floating my-2">
+            <InputText class="form-control btn-success bg-white text-dark" id="name" placeholder="Name" 
+                required @bind-Value="game.Name">
+            </InputText>
+            <label for="name">Название</label>
+        </div>
+        <div class="form-floating mb-2">
+            <InputSelect class="form-select form-select btn-success bg-white text-dark" id="developer" aria-label="select"
+                @bind-Value="game.DeveloperId">
+                <option>None</option>
+                @foreach (Developer developer in developers)
+                {
+                    <option value="@developer.Id">@developer.Name</option>
+                }
+            </InputSelect>
+            <label for="developer">Разработчик</label>
+        </div>
+        <div class="form-floating mb-2">
+            <InputSelect class="form-select form-select btn-success bg-white text-dark" id="platform" aria-label="select"
+                @bind-Value="game.PlatformId">
+                <option>None</option>
+                @foreach (Platform platform in platforms)
+                {
+                    <option value="@platform.Id">@platform.Name</option>
+                }
+            </InputSelect>
+            <label for="platform">Платформа</label>
+        </div>
+        <div class="form-group d-grid gap-2">
+            <button type="submit" class="btn btn-success">
+                @if(GameId == null)
+                {
+                    @:Добавить
+                }
+                else
+                {
+                    @:Сохранить
+                }
+            </button>
+        </div>
+    </EditForm>
+    @if(isError)
+    {
+        <p class="text-danger my-2">Что-то не так, попробуйте повторить позже</p>
+    }
+}
+
+@code {
+    [Parameter]
+    public string GameId { get; set; }
+
+    private Game game = new Game();
+    private List<Developer> developers;
+    private List<Platform> platforms;
+    private bool isError = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var client = _clientFactory.CreateClient("poststation");
+        var responce = await client.GetAsync("api/developers");
+
+        if (responce.IsSuccessStatusCode)
+        {
+            developers = JsonConvert
+                .DeserializeObject<List<Developer>>(
+                responce.Content.ReadAsStringAsync().Result
+                );
+        }
+
+        responce = await client.GetAsync("api/platforms");
+
+        if (responce.IsSuccessStatusCode)
+        {
+            platforms = JsonConvert
+                .DeserializeObject<List<Platform>>(
+                responce.Content.ReadAsStringAsync().Result
+                );
+        }
+
+        if(GameId == null)
+            return;
+
+        responce = await client.GetAsync($"api/games/{GameId}");
+
+        if (responce.IsSuccessStatusCode)
+        {
+            game = JsonConvert
+                .DeserializeObject<Game>(
+                    responce.Content.ReadAsStringAsync().Result
+                );
+        }
+    }
+
+    private async void Handle()
+    {
+        var gameJson = new StringContent(
+            JsonConvert.SerializeObject(game),
+            Encoding.UTF8,
+            "application/json"
+        );
+
+        if(GameId == null)
+        {
+            var client = _clientFactory.CreateClient("poststation");
+            var responce = await client.PostAsync("/api/games", gameJson);
+
+            isError = false;
+            if(responce.IsSuccessStatusCode)
+                NavigationManager.NavigateTo("games");
+            else
+                isError = true;
+        }
+        else
+        {
+            var client = _clientFactory.CreateClient("poststation");
+            var responce = await client.PutAsync("/api/games", gameJson);
+
+            isError = false;
+            if(responce.IsSuccessStatusCode)
+                NavigationManager.NavigateTo("games");
+            else
+                isError = true;
+        }
+    }
+
+}

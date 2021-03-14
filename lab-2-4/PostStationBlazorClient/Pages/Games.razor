@@ -1,5 +1,9 @@
 @page "/games"
+
+@inject NavigationManager NavigationManager
 @inject IHttpClientFactory _clientFactory
+
+<a class="btn btn-outline-success" @onclick="ToForm">Добавить</a>
 
 @if (games == null)
 {
@@ -11,8 +15,6 @@
 }
 else
 {
-    <a class="btn btn-outline-dark" asp-action="MainAdd">Добавить</a>
-
     <div class="d-flex flex-wrap">
         @foreach (Game game in games)
         {
@@ -20,19 +22,19 @@ else
                 <p class="m-0">@game.Name
                     @if (game.Developer != null)
                     {
-                        @:| @game.Developer.Name
+                        @: | @game.Developer.Name
 
                     }
                     @if (game.Platform != null)
                     {
-                        @:| @game.Platform.Name
+                        @: | @game.Platform.Name
 
                     }
                 </p>
-                <a class="btn p-1" asp-action="GamesEdit" asp-route-id="@game.Id">
+                <a class="btn p-1" @onclick="() => ToForm(game.Id)">
                     <i class="bi-pencil text-white"></i>
                 </a>
-                <a class="btn p-1" asp-action="GamesDelete" asp-route-id="@game.Id">
+                <a class="btn p-1" @onclick="() => Delete(game.Id)">
                     <i class="bi-x text-white"></i>
                 </a>
             </div>
@@ -43,7 +45,7 @@ else
 @code {
     private List<Game> games;
 
-    protected override async Task OnInitializedAsync()
+    private async Task UpdateList()
     {
         var client = _clientFactory.CreateClient("poststation");
         var responce = await client.GetAsync("api/games");
@@ -54,6 +56,22 @@ else
                 .DeserializeObject<List<Game>>(
                     responce.Content.ReadAsStringAsync().Result
                 );
+        }
+    }
+
+    protected override async Task OnInitializedAsync() => await UpdateList();
+
+    private void ToForm() => NavigationManager.NavigateTo("gamesForm");
+    private void ToForm(int id) => NavigationManager.NavigateTo($"gamesForm/{id}");
+    private async void Delete(int id)
+    {
+        var client = _clientFactory.CreateClient("poststation");
+        var responce = await client.DeleteAsync($"api/games/{id}");
+
+        if(responce.IsSuccessStatusCode)
+        {
+            await UpdateList();
+            this.StateHasChanged();
         }
     }
 }
