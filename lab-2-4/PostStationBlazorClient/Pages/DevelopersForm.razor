@@ -22,8 +22,8 @@ else
             <label for="name">Название</label>
         </div>
         <div class="form-floating mb-2">
-            <InputSelect class="form-select btn-primary bg-white text-dark" id="country" aria-label="select"
-                @bind-Value="developer.CountryId">
+            <InputSelect class="form-select btn-primary bg-white text-dark" id="country"
+                aria-label="select" @bind-Value="developer.CountryId">
                 <option>None</option>
                 @foreach (Country country in countries)
                 {

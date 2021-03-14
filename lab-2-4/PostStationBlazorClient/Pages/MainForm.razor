@@ -22,13 +22,13 @@ else
             <label for="text">Пост</label>
         </div>
         <div class="form-floating mb-2">
-            <InputSelect class="form-select btn-dark bg-white text-dark" id="country" aria-label="select"
-                @bind-Value="post.GameId">
+            <InputSelect class="form-select btn-dark bg-white text-dark" id="country"
+                aria-label="select" @bind-Value="post.GameId">
                 <option>None</option>
                 @foreach (Game game in games)
-                    {
+                {
                     <option value="@game.Id">@game.Name</option>
-                    }
+                }
             </InputSelect>
             <label for="country">Игра</label>
         </div>
@@ -68,7 +68,7 @@ else
         {
             games = JsonConvert
                 .DeserializeObject<List<Game>>(
-                responce.Content.ReadAsStringAsync().Result
+                    responce.Content.ReadAsStringAsync().Result
                 );
         }
 

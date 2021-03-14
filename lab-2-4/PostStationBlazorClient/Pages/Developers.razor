@@ -19,7 +19,8 @@ else
         @foreach (Developer developer in developers)
         {  
             <div class="p-2 m-2 bg-primary text-white rounded d-flex align-items-center">
-                <p class="m-0">@developer.Name
+                <p class="m-0">
+                    @developer.Name
                     @if (developer.Country != null)
                     {
                         @: | @developer.Country.Name
