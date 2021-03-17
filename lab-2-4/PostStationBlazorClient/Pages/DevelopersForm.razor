@@ -1,0 +1,120 @@
+@page "/add/developers"
+@page "/edit/developers/{DeveloperId}"
+
+@inject NavigationManager NavigationManager
+@inject IHttpClientFactory _clientFactory
+
+@if (countries == null)
+{
+    <div class="d-flex justify-content-center mt-3">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Загрузка...</span>
+        </div>
+    </div>
+}
+else
+{
+    <EditForm Model="@developer" OnValidSubmit="@Handle">
+        <div class="form-floating my-2">
+            <InputText class="form-control btn-primary bg-white text-dark" id="name" placeholder="Name" 
+                required @bind-Value="developer.Name">
+            </InputText>
+            <label for="name">Название</label>
+        </div>
+        <div class="form-floating mb-2">
+            <InputSelect class="form-select btn-primary bg-white text-dark" id="country"
+                aria-label="select" @bind-Value="developer.CountryId">
+                <option>None</option>
+                @foreach (Country country in countries)
+                {
+                    <option value="@country.Id">@country.Name</option>
+                }
+            </InputSelect>
+            <label for="country">Страна</label>
+        </div>
+        <div class="form-group d-grid gap-2">
+            <button type="submit" class="btn btn-primary">
+                @if(DeveloperId == null)
+                {
+                    @:Добавить
+                }
+                else
+                {
+                    @:Сохранить
+                }
+            </button>
+        </div>
+    </EditForm>
+    @if(isError)
+    {
+        <p class="text-danger my-2">Что-то не так, попробуйте повторить позже</p>
+    }
+}
+
+@code {
+    [Parameter]
+    public string DeveloperId { get; set; }
+
+    private List<Country> countries;
+    private Developer developer = new Developer();
+    private bool isError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var client = _clientFactory.CreateClient("poststation");
+        var responce = await client.GetAsync("api/countries");
+
+        if (responce.IsSuccessStatusCode)
+        {
+            countries = JsonConvert
+                .DeserializeObject<List<Country>>(
+                    responce.Content.ReadAsStringAsync().Result
+                );
+        }
+
+        if(DeveloperId == null)
+            return;
+
+        responce = await client.GetAsync($"api/developers/{DeveloperId}");
+
+        if (responce.IsSuccessStatusCode)
+        {
+            developer = JsonConvert
+                .DeserializeObject<Developer>(
+                    responce.Content.ReadAsStringAsync().Result
+                );
+        }
+    }
+
+    private async void Handle()
+    {
+        var developerJson = new StringContent(
+            JsonConvert.SerializeObject(developer),
+            Encoding.UTF8,
+            "application/json"
+        );
+
+        if(DeveloperId == null)
+        {
+            var client = _clientFactory.CreateClient("poststation");
+            var responce = await client.PostAsync("/api/developers", developerJson);
+
+            isError = false;
+            if(responce.IsSuccessStatusCode)
+                NavigationManager.NavigateTo("developers");
+            else
+                isError = true;
+        }
+        else
+        {
+            var client = _clientFactory.CreateClient("poststation");
+            var responce = await client.PutAsync("/api/developers", developerJson);
+
+            isError = false;
+            if(responce.IsSuccessStatusCode)
+                NavigationManager.NavigateTo("developers");
+            else
+                isError = true;
+        }
+    }
+}

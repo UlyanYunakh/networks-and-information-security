@@ -1,0 +1,7 @@
+.nav-item ::deep a {
+    color: #000000;
+}
+
+.nav-item ::deep a.active {
+    background-color: rgb(0, 0, 0);
+}

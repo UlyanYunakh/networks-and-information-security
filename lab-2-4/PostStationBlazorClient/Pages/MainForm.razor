@@ -1,0 +1,121 @@
+@page "/add/posts"
+@page "/edit/posts/{PostId}"
+
+@inject NavigationManager NavigationManager
+@inject IHttpClientFactory _clientFactory
+
+@if (games == null)
+{
+    <div class="d-flex justify-content-center mt-3">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Загрузка...</span>
+        </div>
+    </div>
+}
+else
+{
+    <EditForm Model="@post" OnValidSubmit="@Handle">
+        <div class="form-floating my-2">
+            <InputTextArea class="form-control btn-dark bg-white text-dark" id="text" placeholder="Name"
+                style="height: 150px;resize: none" maxlength="280" required @bind-Value="post.Text">
+            </InputTextArea>
+            <label for="text">Пост</label>
+        </div>
+        <div class="form-floating mb-2">
+            <InputSelect class="form-select btn-dark bg-white text-dark" id="country"
+                aria-label="select" @bind-Value="post.GameId">
+                <option>None</option>
+                @foreach (Game game in games)
+                {
+                    <option value="@game.Id">@game.Name</option>
+                }
+            </InputSelect>
+            <label for="country">Игра</label>
+        </div>
+        <div class="form-group d-grid gap-2">
+            <button type="submit" class="btn btn-dark">
+                @if(PostId == null)
+                {
+                    @:Добавить
+                }
+                else
+                {
+                    @:Сохранить
+                }
+            </button>
+        </div>
+    </EditForm>
+    @if(isError)
+    {
+        <p class="text-danger my-2">Что-то не так, попробуйте повторить позже</p>
+    }
+}
+
+@code {
+    [Parameter]
+    public string PostId { get; set; }
+
+    private Post post = new Post();
+    private List<Game> games = new List<Game>();
+    private bool isError = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var client = _clientFactory.CreateClient("poststation");
+        var responce = await client.GetAsync("api/games");
+
+        if (responce.IsSuccessStatusCode)
+        {
+            games = JsonConvert
+                .DeserializeObject<List<Game>>(
+                    responce.Content.ReadAsStringAsync().Result
+                );
+        }
+
+        if(PostId == null)
+            return;
+
+        client = _clientFactory.CreateClient("poststation");
+        responce = await client.GetAsync($"api/posts/{PostId}");
+
+        if (responce.IsSuccessStatusCode)
+        {
+            post = JsonConvert
+                .DeserializeObject<Post>(
+                    responce.Content.ReadAsStringAsync().Result
+                );
+        }
+    }
+
+    private async void Handle()
+    {
+        var postJson = new StringContent(
+            JsonConvert.SerializeObject(post),
+            Encoding.UTF8,
+            "application/json"
+        );
+
+        if(PostId == null)
+        {
+            var client = _clientFactory.CreateClient("poststation");
+            var responce = await client.PostAsync("/api/posts", postJson);
+
+            isError = false;
+            if(responce.IsSuccessStatusCode)
+                NavigationManager.NavigateTo("/");
+            else
+                isError = true;
+        }
+        else
+        {
+            var client = _clientFactory.CreateClient("poststation");
+            var responce = await client.PutAsync("/api/posts", postJson);
+
+            isError = false;
+            if(responce.IsSuccessStatusCode)
+                NavigationManager.NavigateTo("/");
+            else
+                isError = true;
+        }
+    }
+}
