@@ -8,15 +8,15 @@
 @if (games == null)
 {
     <div class="d-flex justify-content-center mt-3">
-        <div class="spinner-border" role="status">
-            <span class="visually-hidden">Загрузка...</span>
-        </div>
+    <div class="spinner-border" role="status">
+        <span class="visually-hidden">Загрузка...</span>
     </div>
+</div>
 }
 else
 {
     <div class="d-flex flex-wrap">
-        @foreach (Game game in games)
+    @foreach (Game game in games)
         {
             <div class="p-2 m-2 bg-success text-white rounded d-flex align-items-center">
                 <p class="m-0">
@@ -51,17 +51,19 @@ else
         var client = _clientFactory.CreateClient("poststation");
         var responce = await client.GetAsync("api/games");
 
-        if(responce.IsSuccessStatusCode)
+        if (responce.IsSuccessStatusCode)
         {
             games = JsonConvert
-                .DeserializeObject<List<Game>>(
-                    responce.Content.ReadAsStringAsync().Result
-                );
+            .DeserializeObject<List<Game>>(
+            responce.Content.ReadAsStringAsync().Result
+            );
         }
     }
 
-    protected override async Task OnInitializedAsync() => await UpdateList();
-
+    protected override async Task OnInitializedAsync()
+    {
+        await UpdateList();
+    }
     private void ToForm() => NavigationManager.NavigateTo("add/games");
     private void ToForm(int id) => NavigationManager.NavigateTo($"edit/games/{id}");
     private async void Delete(int id)
@@ -69,7 +71,7 @@ else
         var client = _clientFactory.CreateClient("poststation");
         var responce = await client.DeleteAsync($"api/games/{id}");
 
-        if(responce.IsSuccessStatusCode)
+        if (responce.IsSuccessStatusCode)
         {
             await UpdateList();
             this.StateHasChanged();

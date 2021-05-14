@@ -1,0 +1,33 @@
+@page "/user"
+@inject NavigationManager _manager
+
+<div class="d-flex flex-row justify-content-between">
+    <a class="btn btn-outline-dark" href="https://localhost:5003/user/github/login">GitHub <i class="bi-github"></i></a>
+    <a class="btn btn-outline-dark" href="https://localhost:5003/user/instagram/login">Instagram <i class="bi-instagram"></i></a>
+    <a class="btn btn-outline-dark" href="https://localhost:5003/user/yandex/login">Yandex <i class="bi-emoji-frown"></i></a>
+</div>
+
+@if (_token.Length != 0)
+{
+    <div class="text-success">
+        Ура! Вы вошли!
+    </div>
+}
+
+@code {
+    private string _token = "";
+
+    protected override void OnInitialized()
+    {
+        _client.DefaultRequestHeaders.TryGetValues("Authorization", out var value);
+        if (value != null)
+            _token = value.ElementAt(0);
+        if (_manager.Uri.IndexOf("?") != -1)
+        {
+            _token = _manager.Uri.Split('?')[1].Split('=')[1];
+            _client.DefaultRequestHeaders.Add("Authorization", $"bearer {_token}");
+            return;
+        }
+
+    }
+}
