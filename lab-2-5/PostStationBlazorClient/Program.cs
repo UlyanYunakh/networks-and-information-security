@@ -17,11 +17,11 @@ namespace PostStationBlazorClient
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("#app");
 
-            builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:5003") });
+            builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5002") });
 
             builder.Services.AddHttpClient("poststation", c =>
             {
-                c.BaseAddress = new Uri("https://localhost:5003");
+                c.BaseAddress = new Uri("http://localhost:5002");
             });
 
             await builder.Build().RunAsync();
