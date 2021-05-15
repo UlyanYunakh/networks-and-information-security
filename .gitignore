@@ -440,3 +440,9 @@ $RECYCLE.BIN/
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+lab-2-5/PostStationAPI/.vscode/launch.json
+.gitignore
+.gitignore
+lab-2-5/PostStationAPI/.vscode/tasks.json
+lab-2-5/PostStationBlazorClient/.vscode/launch.json
+lab-2-5/PostStationBlazorClient/.vscode/tasks.json
