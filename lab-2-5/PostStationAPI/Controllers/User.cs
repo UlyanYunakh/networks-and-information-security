@@ -2,7 +2,6 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
 using System.Net.Http.Json;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -35,7 +34,7 @@ namespace PostStationAPI.Controllers
             var response = await _client.PostAsync($"https://github.com/login/oauth/access_token?code={code}", content);
             var access_token = await response.Content.ReadAsStringAsync();
 
-            return Redirect($"https://localhost:5001/user?access_token={CreateToken()}");
+            return Redirect($"http://localhost:5000/user?access_token={CreateToken()}");
         }
 
         [Route("instagram/login")]
@@ -49,7 +48,7 @@ namespace PostStationAPI.Controllers
         {
             var code = Request.Query["code"];
 
-            return Redirect($"https://localhost:5001/user?access_token={CreateToken()}");
+            return Redirect($"http://localhost:5000/user?access_token={CreateToken()}");
         }
 
         [Route("yandex/login")]
@@ -64,14 +63,14 @@ namespace PostStationAPI.Controllers
             var code = Request.Query["access_token"];
             Console.WriteLine(code);
 
-            return Redirect($"https://localhost:5001/user?access_token={CreateToken()}");
+            return Redirect($"http://localhost:5000/user?access_token={CreateToken()}");
         }
 
         private string CreateToken()
         {
             var jwtToken = new JwtSecurityToken
             (
-                "https://localhost:5001",
+                "http://localhost:5000",
                 notBefore: DateTime.UtcNow,
                 expires: DateTime.UtcNow.AddMinutes(10),
                 signingCredentials: new SigningCredentials
