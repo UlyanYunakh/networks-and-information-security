@@ -1,0 +1,16 @@
+version: '3.4'
+
+services:
+  api:
+    image: composeapi:latest
+    container_name: api
+    ports: 
+      - 5002:5002
+      
+  blazor:
+    image: composeblazor:latest
+    container_name: blazor
+    ports: 
+      - 5000:5000
+    depends_on: 
+      - api
